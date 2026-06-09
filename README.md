@@ -1,174 +1,114 @@
-![QuantumROM Logo](QuantumROM/logo/QuantumROM.jpg)
 
-## 📌 Overview.
-This Custom ROM is built by combining and refining features from multiple projects, including UNICA, Legacy-UI, and AstroRom.
-- The goal of this ROM is to provide a clean, optimized, and stable One UI experience with enhanced usability and performance.
+<img width="640" height="640" alt="IMG_20260609_191356_086" src="https://github.com/user-attachments/assets/2f0f3c48-7432-4165-af34-fff8f8b22a30" />
 
-### 🛠️ Tools features.
-- Download firmware directly from samsung server.
-- File config and file contexts generate.
-- Extract and img build ( erofs and ext4 supported).
 
-### ✨ Key Features.
-- System Optimization.
-- Heavy debloated system (removed unnecessary apps & services).
-- Improved performance and smoother UI experience.
-- Optimized background processes.
-- Better battery efficiency.
-- Enhanced Functionality.
-- Screenshot anywhere (enabled globally).
-- Built-in Screen Recorder.
-- More floating features enabled.
-- Edge features fully working.
-- Stock device conig always be added.
-- Extra brightness support.
-- Object, shadow and reflection remover support.
-- Multi user support.
-- Camera privacy toggle support.
-- Private share patch.
-- Google photos unlimited backup.
-- JDM device support.
-- [BluetoothLibraryPatcher](https://github.com/3arthur6/BluetoothLibraryPatcher) integrated
+---
 
-### 🔐 Security & Privacy.
-- Secure Folder support.
-- Essential security components retained.
-- Stable and safe daily-driver experience.
+📦 ZineROM Project
 
-### 📱 One UI Experience.
-- Full One UI apps included.
-- Important system apps preserved.
-- China Smart Manager support.
-- AI features enabled.
+A custom Android ROM project focused on deep system modification, advanced UI enhancement, and performance-oriented framework tuning.
 
-### 🎯 Project Goal.
-- To deliver a lightweight yet fully featured Samsung One UI ROM that balances.
-- Performance.
-- Stability.
-- Essential Features.
-- Clean User Experience.
+Maintained by: Zine
+Project Type: Custom ROM / System Modification Framework
 
-## How to Use:
-#### 1. Fork the Repository.
-Give a ⭐ star to the repository.
-Fork the repository to your GitHub account.
 
-#### 2. Run the Workflow.
-Open your forked repository.
-- Go to the Actions tab.
-- Select QuantumROM Tools.
-- Click Run workflow.
+---
 
-#### 3. Set Your Device Model.
-Update your device model in the STOCK_DEVICE_MODEL option.
-- If your model is available in /QuantumROM/Device folder of this repository, the tool will work for your device.
-- If your model is not present, set STOCK_DEVICE_MODEL to None.
+⚙️ ZineROM Engine
 
-#### 4. Kernel BPF Version Option.
-Set this o
-ption to True if your kernel BPF version is 5.4 (lower than 5.10).
-- Otherwise, set it to False.
+ZineROM Engine is the core system layer behind all ZineROM builds.
 
-#### 5. Set Target Device Information.
-- Configure the following options:
-- TARGET_DEVICE_MODEL
-- The device model from which you want to port the ROM.
-- TARGET_DEVICE_CSC
-- The country/region code used to download the target device firmware.
-- TARGET_DEVICE_IMEI
-- Required to download the target device firmware from the Samsung server.
-- Change the IMEI if you want to change the target device.
+It provides a unified modification framework that enables:
 
-#### 6. OUTPUT_FILESYSTEM (erofs / ext4 / f2fs).
-My tool can build images in two formats:
-- erofs
-  - Recommended if your device partition size is small.
-  - Saves storage space.
-  - Your kernel must support EROFS.
-- ext4
-  - Use this if your kernel does not support EROFS.
-  - The generated image will be larger in size.
-- f2fs
-  - Recommended if your device partition size is small. (Not better than EROFS)
-  - Saves storage space.
-  - Your kernel must support F2FS.
+Deep system-level modifications
 
-#### 7. Compress IMG to XZ (True / False).
-If set to True:
- - The generated image will be compressed to .xz format.
- - This reduces file size before uploading.
+Runtime performance tuning and optimization
 
-If set to False:
- - The image will remain in its original format without compression.
-   
-#### 8. Add Git Credentials:
-In your forked repository, go to:
--Settings → Secrets and variables → Actions
-- Click **New repository secret**, then create a new secret:
-- Name:
-  - GIT_TOKEN
-  - Add git secret token and save.
-  - You can search on YouTube for a guide on how to create a GitHub Personal Access Token.
-  - If you do not add the `GIT_TOKEN`, the built ROM info and link will not be added to your repository's Release section. You will get link only in runner output.
+Framework and UI behavior enhancements
 
-### Credits:
-#### 1. Samsung Firmware Downloader.
-- martinetd
-- https://github.com/martinetd/samloader
-- Used for downloading Samsung firmware.
+Modular compatibility layer for different builds
 
-#### 2. Multi Disabler.
-- ianmacd
-- https://github.com/ianmacd/multidisabler-samsung
-- Used for disabling Samsung security and data encryption.
+System service refinement and cleanup logic
 
-#### 3. Bluetooth Library Patcher.
-- 3arthur6
-- https://github.com/3arthur6/BluetoothLibraryPatcher
-- Used for patching Samsung Bluetooth libraries.
+UX consistency across modified components
 
-#### 4. UN1CA Project.
-- salvogiangri
-- https://github.com/salvogiangri/UN1CA
 
-#### Components Used from UN1CA.
-- `HEX_PATCH` function (modified from UN1CA implementation)
-- Knox Patch (from UN1CA)
-- Secure Folder Patch (from UN1CA)
-- Knox Guard Patch (from UN1CA)
-- Secure Flag Patch (from UN1CA)
-- SSRM Patch (from UN1CA)
-- Some SELinux patches followed the UN1CA implementation.
+The engine is designed to enable high-level system control without breaking core structure stability.
 
-#### 5. App optimization stuck fix.
-- ExtremeXT
-- https://github.com/ExtremeXT
-- For app optimization stuck fix.
 
-#### 6. Google photos unlimited backup.
-- VehanRajintha
-- https://github.com/VehanRajintha/Free-Unlimited-Google-Cloud-Backup-Magisk-Module
+---
 
-#### 7. ChatGPT.
-- https://chat.openai.com
-- For providing bash commands and bash functions according to the project requirements and instructions.
+📱 ZineROM Project Overview
 
-#### 8. GoFile Uploader.
-- Sushrut1101
-- https://github.com/Sushrut1101/GoFile-Upload
+ZineROM focuses on advanced Android system customization with emphasis on UI refinement, performance tuning, and feature expansion beyond stock limitations.
 
-#### 9. OMC Decoder.
-- fei-ke
-- https://github.com/fei-ke/OmcTextDecoder
+This project is built around high system modification depth, including:
 
-#### 10. apktool.
-- iBotPeaches
-- https://github.com/ibotpeaches/apktool
+Advanced system feature injection
 
-### Licensing.
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-- **[android-tools](https://github.com/nmeum/android-tools)** - Licensed under Apache License 2.0
-- **[apktool](https://github.com/iBotPeaches/Apktool)** - Licensed under Apache License 2.0  
-- **[erofs-utils](https://github.com/sekaiacg/erofs-utils)** - Dual licensed (GPL-2.0, Apache-2.0)
-- **[platform_build](https://android.googlesource.com/platform/build)** - Licensed under Apache License 2.0
-- **[e2fsprogs](https://github.com/tytso/e2fsprogs)** - Licensed under GPL-2.0 / LGPL-2.1
+Global “screenshot anywhere” functionality
+
+Highly debloated system environment (removal of unnecessary system apps)
+
+Enhanced animation system with smooth and refined transitions
+
+UI/UX restructuring for modern experience
+
+Performance-oriented system optimization
+
+Extended control over framework behavior and system services
+
+
+
+---
+
+🌟 Core Highlights
+
+Deep system modification architecture
+
+Enhanced UX and animation system
+
+Aggressive system debloating strategy
+
+Added global system-level features (e.g., screenshot anywhere)
+
+Performance-focused framework tuning
+
+Clean, optimized system environment
+
+Experimental UI enhancement layer powered by ZineROM Engine
+
+
+---
+
+📦 Design Philosophy
+
+ZineROM is built with the idea of:
+
+Removing unnecessary system limitations
+
+Enhancing user control over the system
+
+Improving smoothness and responsiveness
+
+Creating a modern, refined Android experience
+
+Extending native One UI behavior through safe modification layers
+
+---
+
+📢 Updates & Support
+
+Telegram:
+
+https://t.me/customromguy
+
+https://t.me/customromerguy
+
+
+
+---
+
+🧠 Credits
+
+ZineROM Engine development by zine and QuantumROM 
