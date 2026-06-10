@@ -8,9 +8,7 @@
 
 A custom Android ROM project focused on deep system modification, advanced UI enhancement, and performance-oriented framework tuning.
 
-Maintained by: Zine
-Project Type: Custom ROM / System Modification Framework
-
+Maintained by: @zinefather
 
 ---
 
