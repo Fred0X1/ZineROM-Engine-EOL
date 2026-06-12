@@ -95,10 +95,14 @@ jobs:
               sudo xz -9 -T0 "$img"
             done
             sudo rm -f "$OUT_DIR"/*.img
+            
+            echo "Creating zip with compressed .xz files only..."
+            7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img.xz -mx=5
+          else
+            echo "Creating zip with raw .img files only..."
+            7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5
           fi
 
-          echo "Creating zip: $ZIP_NAME"
-          7z a -tzip "$ZIP_PATH" "$OUT_DIR"/* -mx=5
           echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
 
       - name: Upload file in GoFile & Create Release.
