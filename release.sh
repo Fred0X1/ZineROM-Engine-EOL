@@ -7,7 +7,7 @@ set -e
 # GitHub automatically provides: GITHUB_REPOSITORY
 
 TAG_NAME="${TARGET_DEVICE}-$(date +%s)"
-RELEASE_NAME="${TARGET_DEVICE} Port For ${STOCK_DEVICE}"
+RELEASE_NAME=""ZineROM-${STOCK_DEVICE} Ported From ${TARGET_DEVICE}"
 
 echo "Uploading to GoFile..."
 GOFILE_LINK=$(sudo bash upload.sh "$ZIP_PATH")
