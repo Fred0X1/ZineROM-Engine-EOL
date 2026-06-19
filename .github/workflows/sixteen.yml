@@ -4,27 +4,31 @@ on:
   workflow_dispatch:
     inputs:
       SAMFW_URL:
-        description: "رابط تحميل فريم وير SamFW المباشر (لأي إصدار One UI 7 أو 8 أو غيره)"
-        required: true
+        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعتمد على التحميل التلقائي)"
+        required: false
         default: ""
       STOCK_DEVICE:
-        description: "اسم جهازك الحالي اللي هتبني عليه الروم (مثال: SM-A225F)"
-        required: true
-        default: "SM-A225F"
-      TARGET_DEVICE:
-        description: "اسم الجهاز صاحب الروم الأصلية المأخوذ منها البورت (مثال: SM-A155F)"
+        description: "📱 جهازك الاقتصادي/الباجيت (اللي هيتفلش عليه البورت في الآخر) - مثال: SM-A155F"
         required: true
         default: "SM-A155F"
+      TARGET_DEVICE:
+        description: "👑 الجهاز الفلاج شيب (صاحب الروم الأصلية اللي هناخد منها الملفات) - مثال: SM-S928B"
+        required: true
+        default: "SM-S928B"
+      TARGET_DEVICE_CSC:
+        description: "🌍 منطقة الـ CSC للجهاز الفلاج شيب صاحب الروم الأصلية (مثال: BKD أو EGY)"
+        required: true
+        default: "BKD"
       KERNEL_VERSION:
-        description: "إصدار كيرنال جهازك الحالي (لتحديد رقعة الـ Hotspot والشبكة للأجهزة القديمة)"
+        description: "🔧 إصدار كيرنال جهازك الاقتصادي الحالي (لتحديد رقعة الـ Hotspot للأجهزة القديمة)"
         required: true
         type: choice
         options:
-          - "Old Kernel (4.14 / 4.19 / 5.4)"
           - "New Kernel (5.10 or higher)"
+          - "Old Kernel (4.14 / 4.19 / 5.4)"
         default: "New Kernel (5.10 or higher)"
       OUTPUT_FILESYSTEM:
-        description: "نوع نظام الملفات (erofs للأجهزة الحديثة / ext4 للأجهزة القديمة كيرنال 4)"
+        description: "💾 نوع نظام الملفات الناتج (erofs للأجهزة الحديثة / ext4 للأجهزة القديمة)"
         required: true
         type: choice
         options:
@@ -33,7 +37,7 @@ on:
           - f2fs
         default: erofs
       COMPRESS_IMG_TO_XZ:
-        description: "ضغط الصور بصيغة XZ (زي نظام رومات تيليجرام لتصغير المساحة جداً)"
+        description: "⚡ ضغط الصور بصيغة XZ (عصر الملفات لتقليل المساحة زي رومات تيليجرام)"
         required: true
         type: choice
         options:
@@ -76,11 +80,15 @@ jobs:
           
           mkdir -p "FW/$TARGET_DEV"
           
-          echo "🚀 جاري التحميل من رابط SamFW المباشر..."
-          wget -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36" \
-               -O "FW/$TARGET_DEV/samfw_firmware.zip" "$SAMFW_LINK"
+          if [ -n "$SAMFW_LINK" ]; then
+            echo "🚀 جاري التحميل من رابط SamFW المباشر..."
+            wget -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+                 -O "FW/$TARGET_DEV/samfw_firmware.zip" "$SAMFW_LINK"
+          else
+            echo "🔍 لم يتم إدخال رابط مباشر، سيتم الاعتماد على السكريبت الداخلي لبدء التحميل التلقائي..."
+          fi
           
-          echo "📦 جاري فك ضغط الأرشيف واستخراج ملفات الـ AP و BL و CSC..."
+          echo "📦 جاري فك ضغط الأرشيف المستخرج..."
           cd "FW/$TARGET_DEV"
           unzip samfw_firmware.zip || true
           rm -f samfw_firmware.zip
@@ -93,7 +101,6 @@ jobs:
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}
         run: |
-          # تحديد حالة رقعة الكيرنال بناءً على اختيارك فوق
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "Old Kernel (4.14 / 4.19 / 5.4)" ]; then
             USE_TETHER_FIX="True"
           else
@@ -106,7 +113,7 @@ jobs:
             "${{ github.event.inputs.STOCK_DEVICE }}" \
             "$USE_TETHER_FIX" \
             "${{ github.event.inputs.TARGET_DEVICE }}" \
-            "EGY" \
+            "${{ github.event.inputs.TARGET_DEVICE_CSC }}" \
             "353435774197736" \
             "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"
 
@@ -118,7 +125,7 @@ jobs:
           ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
           if [ "${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}" = "True" ]; then
-            echo "⚡ جاري عصر ملفات الـ .img بصيغة XZ (مستوى 9) لتقليل المساحة مثل رومات تيليجرام..."
+            echo "⚡ جاري عصر ملفات الـ .img بصيغة XZ (مستوى 9) لتقليل المساحة لأقصى حد..."
             for img in "$OUT_DIR"/*.img; do
               [ -f "$img" ] || continue
               echo "Compressing $img"
@@ -143,7 +150,6 @@ jobs:
           OUTPUT_FILESYSTEM: ${{ github.event.inputs.OUTPUT_FILESYSTEM }}
           COMPRESS_IMG_TO_XZ: ${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}
         run: |
-          # تمرير متغير الكيرنال للريليز سكريبت إذا كان بيقراه
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "Old Kernel (4.14 / 4.19 / 5.4)" ]; then
             export USE_UI_8_TETHERING_APEX="True"
           else
