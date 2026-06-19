@@ -3,6 +3,10 @@ name: QuantumROM Tools Sixteen.
 on:
   workflow_dispatch:
     inputs:
+      CUSTOM_FW_URL:
+        description: "رابط تحميل الروم المباشر (مثلاً One UI 7) - سيبه فاضي للتحميل التلقائي"
+        required: false
+        default: ""
       STOCK_DEVICE:
         description: "STOCK_DEVICE_MODEL or None"
         required: true
@@ -60,10 +64,26 @@ jobs:
           pip3 install git+https://github.com/SN-Abdullah-Al-Noman/samloader.git --break-system-packages
           mkdir -p FW WORK OUT
 
-      - name: Download firmware ▶️ ${{ github.event.inputs.TARGET_DEVICE }} - ${{ github.event.inputs.TARGET_DEVICE_CSC }}
+      - name: Download firmware ▶️ ${{ github.event.inputs.TARGET_DEVICE }}
         run: |
-          source scripts/QuantumRom.sh
-          DOWNLOAD_FIRMWARE "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" "FW" "${{ github.event.inputs.TARGET_FW_VERSION }}"
+          CUSTOM_URL="${{ github.event.inputs.CUSTOM_FW_URL }}"
+          TARGET_DEV="${{ github.event.inputs.TARGET_DEVICE }}"
+          
+          if [ -n "$CUSTOM_URL" ]; then
+            echo "🔄 جاري تحميل الروم المخصصة من الرابط المباشر..."
+            mkdir -p "FW/$TARGET_DEV"
+            wget -O "FW/$TARGET_DEV/firmware.zip" "$CUSTOM_URL"
+            
+            echo "📦 جاري فك ضغط ملفات الروم المخصصة..."
+            cd "FW/$TARGET_DEV"
+            unzip firmware.zip || true
+            rm -f firmware.zip
+            cd ../..
+          else
+            echo "🤖 لم يتم وضع رابط، جاري التحميل التلقائي المعتاد عبر Samloader..."
+            source scripts/QuantumRom.sh
+            DOWNLOAD_FIRMWARE "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" "FW" "${{ github.event.inputs.TARGET_FW_VERSION }}"
+          fi
 
       - name: Extract firmware
         run: |
@@ -114,4 +134,5 @@ jobs:
           COMPRESS_IMG_TO_XZ: ${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}
           USE_UI_8_TETHERING_APEX: ${{ github.event.inputs.USE_UI_8_TETHERING_APEX }}
         run: |
-           bash release.sh
+          bash release.sh
+
