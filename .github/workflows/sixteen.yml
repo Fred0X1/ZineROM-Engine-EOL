@@ -4,21 +4,25 @@ on:
   workflow_dispatch:
     inputs:
       SAMFW_URL:
-        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعتمد على التحميل التلقائي)"
+        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعتمد على التحميل التلقائي القديم)"
         required: false
         default: ""
       STOCK_DEVICE:
-        description: "📱 جهازك الاقتصادي/الباجيت (اللي هيتفلش عليه البورت في الآخر) - مثال: SM-A155F"
+        description: "📱 جهازك الاقتصادي/الباجيت (اللي هيتفلش عليه البورت) - مثال: SM-A155F"
         required: true
         default: "SM-A155F"
       TARGET_DEVICE:
-        description: "👑 الجهاز الفلاج شيب (صاحب الروم الأصلية اللي هناخد منها الملفات) - مثال: SM-S928B"
+        description: "👑 الجهاز الفلاج شيب (صاحب الروم الأصلية المصدر) - مثال: SM-S928B"
         required: true
         default: "SM-S928B"
       TARGET_DEVICE_CSC:
-        description: "🌍 منطقة الـ CSC للجهاز الفلاج شيب صاحب الروم الأصلية (مثال: BKD أو EGY)"
+        description: "🌍 رمز الـ CSC للجهاز الفلاج شيب (مطلوب للطريقة التلقائية - مثال: BKD أو EGY)"
         required: true
         default: "BKD"
+      IMEI:
+        description: "🆔 اكتب الـ IMEI هنا (مطلوب فقط لو سبت خانة الرابط فوق فاضية وعايز تحميل تلقائي)"
+        required: false
+        default: ""
       KERNEL_VERSION:
         description: "🔧 إصدار كيرنال جهازك الاقتصادي الحالي (لتحديد رقعة الـ Hotspot للأجهزة القديمة)"
         required: true
@@ -37,7 +41,7 @@ on:
           - f2fs
         default: erofs
       COMPRESS_IMG_TO_XZ:
-        description: "⚡ ضغط الصور بصيغة XZ (عصر الملفات لتقليل المساحة زي رومات تيليجرام)"
+        description: "⚡ ضغط الصور بصيغة XZ (عصر الملفات لتقليل المساحة لأقصى حد)"
         required: true
         type: choice
         options:
@@ -77,19 +81,31 @@ jobs:
         run: |
           TARGET_DEV="${{ github.event.inputs.TARGET_DEVICE }}"
           SAMFW_LINK="${{ github.event.inputs.SAMFW_URL }}"
+          TARGET_CSC="${{ github.event.inputs.TARGET_DEVICE_CSC }}"
+          IMEI_NUM="${{ github.event.inputs.IMEI }}"
           
           mkdir -p "FW/$TARGET_DEV"
+          cd "FW/$TARGET_DEV"
           
           if [ -n "$SAMFW_LINK" ]; then
-            echo "🚀 جاري التحميل من رابط SamFW المباشر..."
+            echo "🚀 [الحالة الأولى]: تم اكتشاف رابط مباشر، جاري التحميل فوراً..."
             wget -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-                 -O "FW/$TARGET_DEV/samfw_firmware.zip" "$SAMFW_LINK"
+                 -O "samfw_firmware.zip" "$SAMFW_LINK"
           else
-            echo "🔍 لم يتم إدخال رابط مباشر، سيتم الاعتماد على السكريبت الداخلي لبدء التحميل التلقائي..."
+            echo "🔍 [الحالة الثانية]: الرابط فاضي! جاري تشغيل السحب التلقائي التقليدي عبر Samloader..."
+            if [ -z "$IMEI_NUM" ]; then
+              echo "❌ خطأ حرج: الطريقة التلقائية تتطلب كتابة الـ IMEI في الخانة المخصصة لها!"
+              exit 1
+            fi
+            
+            echo "🔄 جاري فحص وجلب التحديث لجهاز $TARGET_DEV برمز منطقة $TARGET_CSC..."
+            python3 -m samloader -m "$TARGET_DEV" -r "$TARGET_CSC" checkupdate
+            
+            echo "📥 جاري تحميل وفك تشفير الروم رسمياً..."
+            python3 -m samloader -m "$TARGET_DEV" -r "$TARGET_CSC" -i "$IMEI_NUM" download -o "samfw_firmware.zip"
           fi
           
-          echo "📦 جاري فك ضغط الأرشيف المستخرج..."
-          cd "FW/$TARGET_DEV"
+          echo "📦 جاري فك ضغط أرشيف الفيرموير المستخرج..."
           unzip samfw_firmware.zip || true
           rm -f samfw_firmware.zip
           cd ../..
@@ -124,8 +140,12 @@ jobs:
           ZIP_NAME="${{ github.event.inputs.TARGET_DEVICE }}_Port_For_${{ github.event.inputs.STOCK_DEVICE }}.zip"
           ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
+          echo "🧹 جاري تنظيف المخرجات وحذف boot.img وأي ملفات إضافية..."
+          # هذا الأمر يضمن الإبقاء فقط وحصرياً على الـ 3 ملفات المطلوبة وحذف ما دون ذلك
+          find "$OUT_DIR" -type f ! -name "system.img" ! -name "product.img" ! -name "system_ext.img" -delete
+
           if [ "${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}" = "True" ]; then
-            echo "⚡ جاري عصر ملفات الـ .img بصيغة XZ (مستوى 9) لتقليل المساحة لأقصى حد..."
+            echo "⚡ جاري عصر الثلاث ملفات (.img) بصيغة XZ لتقليل المساحة لأقصى حد..."
             for img in "$OUT_DIR"/*.img; do
               [ -f "$img" ] || continue
               echo "Compressing $img"
@@ -133,10 +153,10 @@ jobs:
             done
             sudo rm -f "$OUT_DIR"/*.img
             
-            echo "📦 جاري إنشاء ملف الـ Zip النهائي بالملفات المضغوطة..."
+            echo "📦 جاري إنشاء ملف الـ Zip النهائي بالملفات الثلاثة المضغوطة XZ..."
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img.xz -mx=5
           else
-            echo "📦 جاري تجميع ملفات الـ raw .img جوه الـ Zip مباشرة بدون ضغط إضافي..."
+            echo "📦 جاري تجميع الـ 3 ملفات خام (raw .img) جوه الـ Zip مباشرة..."
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5
           fi
 
@@ -156,3 +176,4 @@ jobs:
             export USE_UI_8_TETHERING_APEX="False"
           fi
           bash release.sh
+
