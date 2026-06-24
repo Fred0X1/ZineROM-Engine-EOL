@@ -79,7 +79,10 @@ jobs:
 
       - name: Download or Fetch Firmware  
         run: |  
-          URL=$(echo "${{ github.event.inputs.SAMFW_URL }}" | xargs)  
+          # تنظيف الرابط تماماً من أي رموز مخفية أو مسافات أو علامات تنصيص زائدة
+          URL=$(echo "${{ github.event.inputs.SAMFW_URL }}" | tr -d '\r' | xargs)
+          URL=$(echo "$URL" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+          
           TARGET_DEV=$(echo "${{ github.event.inputs.TARGET_DEVICE }}" | xargs)  
           TARGET_CSC=$(echo "${{ github.event.inputs.TARGET_DEVICE_CSC }}" | xargs)  
           IMEI_NUM=$(echo "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" | xargs)  
@@ -88,8 +91,8 @@ jobs:
             
           if [ -n "$URL" ]; then  
             echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط SamFW مباشر، جاري السحب السريع..."  
-            curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \  
-              -o "FW/$TARGET_DEV/samfw_firmware.zip" "$URL" || { echo "❌ فشل تحميل الرابط المباشر!"; exit 1; }  
+            # الأمر هنا في سطر واحد تماماً بدون أي كسر للسطر لضمان عدم حدوث أخطاء
+            curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -o "FW/$TARGET_DEV/samfw_firmware.zip" "$URL" || { echo "❌ فشل تحميل الرابط المباشر!"; exit 1; }  
               
             echo "📦 جاري فك ضغط ملف الـ ZIP المباشر داخل مجلد الفيرموير..."  
             cd "FW/$TARGET_DEV"  
@@ -141,7 +144,6 @@ jobs:
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/system.img.xz "$OUT_DIR"/product.img.xz "$OUT_DIR"/system.ex*.xz -mx=5  
           else  
             echo "⚡ [وضع السرعة]: تجميع الملفات المحددة مباشرة بدون ضغط XZ..."  
-            # استخدام النجمة مع system.ex* لضمان التقاط system.ex أو system.ext4 أو system.ext  
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/system.img "$OUT_DIR"/product.img "$OUT_DIR"/system.ex* -mx=5  
           fi  
           echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV  
