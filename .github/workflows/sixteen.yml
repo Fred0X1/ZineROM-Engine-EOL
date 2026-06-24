@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       SAMFW_URL:
-        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعتمد على التحميل التلقائي القديم)"
+        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعتمد على التحميل التلقائي)"
         required: false
         default: ""
       STOCK_DEVICE:
@@ -60,6 +60,7 @@ jobs:
 
       - name: Validate STOCK_DEVICE
         run: |
+          set -e
           STOCK_DEVICE="${{ github.event.inputs.STOCK_DEVICE }}"
           DEVICE_PATH="QuantumROM/Devices/$STOCK_DEVICE"
           if [ "$STOCK_DEVICE" != "None" ] && [ ! -d "$DEVICE_PATH" ]; then
@@ -72,6 +73,7 @@ jobs:
 
       - name: Install Dependencies.
         run: |
+          set -e
           sudo apt install -y p7zip-full lz4 liblz4-1 liblz4-dev libzstd1 libzstd-dev build-essential android-sdk-libsparse-utils f2fs-tools fuse2fs fuse e2fsprogs python3 python3-pip zipalign unzip openjdk-17-jdk jq perl xxd kmod erofs-utils linux-modules-extra-$(uname -r)
           sudo modprobe f2fs
           pip3 install git+https://github.com/SN-Abdullah-Al-Noman/samloader.git --break-system-packages
@@ -79,6 +81,7 @@ jobs:
 
       - name: Download firmware from SamFW
         run: |
+          set -e
           TARGET_DEV="${{ github.event.inputs.TARGET_DEVICE }}"
           SAMFW_LINK="${{ github.event.inputs.SAMFW_URL }}"
           TARGET_CSC="${{ github.event.inputs.TARGET_DEVICE_CSC }}"
@@ -88,11 +91,11 @@ jobs:
           cd "FW/$TARGET_DEV"
           
           if [ -n "$SAMFW_LINK" ]; then
-            echo "🚀 [الحالة الأولى]: تم اكتشاف رابط مباشر، جاري التحميل فوراً..."
-            wget -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-                 -O "samfw_firmware.zip" "$SAMFW_LINK"
+            echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط مباشر، جاري التحميل فوراً..."
+            curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+                 -o "samfw_firmware.zip" "$SAMFW_LINK"
           else
-            echo "🔍 [الحالة الثانية]: الرابط فاضي! جاري تشغيل السحب التلقائي التقليدي عبر Samloader..."
+            echo "🔍 [الطريقة الثانية]: الرابط فارغ! جاري تشغيل السحب التلقائي عبر Samloader..."
             if [ -z "$IMEI_NUM" ]; then
               echo "❌ خطأ حرج: الطريقة التلقائية تتطلب كتابة الـ IMEI في الخانة المخصصة لها!"
               exit 1
@@ -105,18 +108,26 @@ jobs:
             python3 -m samloader -m "$TARGET_DEV" -r "$TARGET_CSC" -i "$IMEI_NUM" download -o "samfw_firmware.zip"
           fi
           
+          # فحص صارم للتأكد من نجاح التحميل وعدم وجود ملف فارغ
+          if [ ! -s "samfw_firmware.zip" ]; then
+            echo "❌ خطأ حرج: فشل تحميل ملف الروم تماماً (الرابط منتهي أو سيرفر التحميل محجوب)!"
+            exit 1
+          fi
+
           echo "📦 جاري فك ضغط أرشيف الفيرموير المستخرج..."
-          unzip samfw_firmware.zip || true
+          unzip samfw_firmware.zip
           rm -f samfw_firmware.zip
           cd ../..
 
       - name: Extract firmware
         run: |
+          set -e
           source scripts/QuantumRom.sh
           EXTRACT_FIRMWARE "FW/${{ github.event.inputs.TARGET_DEVICE }}"
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}
         run: |
+          set -e
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "Old Kernel (4.14 / 4.19 / 5.4)" ]; then
             USE_TETHER_FIX="True"
           else
@@ -135,13 +146,19 @@ jobs:
 
       - name: Compress all .img & make zip file before upload.
         run: |
+          set -e
           echo "BUILD_TIME=$(TZ='Asia/Dhaka' date '+%Y-%m-%d %I:%M:%S %p UTC+6')" >> $GITHUB_ENV
           OUT_DIR="$(pwd)/OUT"
           ZIP_NAME="${{ github.event.inputs.TARGET_DEVICE }}_Port_For_${{ github.event.inputs.STOCK_DEVICE }}.zip"
           ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
+          # صمام أمان للتأكد من أن عملية البناء نجحت بالفعل وأنتجت ملفات نظام
+          if [ ! -f "$OUT_DIR/system.img" ]; then
+            echo "❌ خطأ حرج: لم يتم العثور على system.img! سكريبت البناء sixteen.sh واجه مشكلة ولم يكتمل."
+            exit 1
+          fi
+
           echo "🧹 جاري تنظيف المخرجات وحذف boot.img وأي ملفات إضافية..."
-          # هذا الأمر يضمن الإبقاء فقط وحصرياً على الـ 3 ملفات المطلوبة وحذف ما دون ذلك
           find "$OUT_DIR" -type f ! -name "system.img" ! -name "product.img" ! -name "system_ext.img" -delete
 
           if [ "${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}" = "True" ]; then
@@ -170,10 +187,10 @@ jobs:
           OUTPUT_FILESYSTEM: ${{ github.event.inputs.OUTPUT_FILESYSTEM }}
           COMPRESS_IMG_TO_XZ: ${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}
         run: |
+          set -e
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "Old Kernel (4.14 / 4.19 / 5.4)" ]; then
             export USE_UI_8_TETHERING_APEX="True"
           else
             export USE_UI_8_TETHERING_APEX="False"
           fi
           bash release.sh
-
