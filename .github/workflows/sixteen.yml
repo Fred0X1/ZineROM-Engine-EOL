@@ -3,13 +3,21 @@ name: QuantumROM Tools Sixteen.
 on:
   workflow_dispatch:
     inputs:
+      SAMFW_URL:
+        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعمل تحميل تلقائي)"
+        required: false
+        default: ""
       STOCK_DEVICE:
         description: "📱 جهازك الاقتصادي (الـ Stock)"
         required: true
         default: "SM-A155F"
       USE_UI_8_TETHERING_APEX:
-        description: "Set True if your kernel BPF version is 5.4 (lower than 5.10)."
+        description: "🔧 خيار الكيرنال (True للأجهزة القديمة 5.4 / False للجديدة 5.10)"
         required: true
+        type: choice
+        options:
+          - "False"
+          - "True"
         default: "False"
       TARGET_DEVICE:
         description: "👑 الجهاز الفلاج شيب المصدر (الـ Port)"
@@ -20,16 +28,25 @@ on:
         required: true
         default: "EGY"
       TARGET_DEVICE_IMEI:
-        description: "🆔 الـ IMEI (يمكن تركه فارغاً)"
+        description: "🆔 الـ IMEI (مطلوب فقط لو خانة الرابط المباشر فوق فاضية)"
         required: false
         default: ""
       OUTPUT_FILESYSTEM:
-        description: "OUTPUT_FILESYSTEM. e.g erofs / ext4 / f2fs"
+        description: "💾 نوع نظام الملفات الناتج"
         required: true
-        default: "erofs"
+        type: choice
+        options:
+          - erofs
+          - ext4
+          - f2fs
+        default: erofs
       COMPRESS_IMG_TO_XZ:
-        description: "⚡ ضغط الصور بصيغة XZ (إيقافه يسرع البناء جداً)"
+        description: "⚡ ضغط الصور بصيغة XZ (اختر False لتسريع البناء زي التليجرام)"
         required: true
+        type: choice
+        options:
+          - "False"
+          - "True"
         default: "False"
 
 jobs:
@@ -39,7 +56,6 @@ jobs:
 
     steps:
       - name: Checkout repository.
-        uses: actions/colors@v4 # أو actions/checkout@v4 تبعاً للمستودع
         uses: actions/checkout@v4
 
       - name: Validate STOCK_DEVICE
@@ -61,11 +77,30 @@ jobs:
           pip3 install git+https://github.com/SN-Abdullah-Al-Noman/samloader.git --break-system-packages
           mkdir -p FW WORK OUT
 
-          # تحميل الروم بناءً على المدخلات الافتراضية الجديدة
-      - name: Download firmware ▶️ ${{ github.event.inputs.TARGET_DEVICE }} - ${{ github.event.inputs.TARGET_DEVICE_CSC }}
+      - name: Download or Fetch Firmware
         run: |
-          source scripts/QuantumRom.sh
-          DOWNLOAD_FIRMWARE "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" "FW" "${{ github.event.inputs.TARGET_FW_VERSION }}"
+          URL=$(echo "${{ github.event.inputs.SAMFW_URL }}" | xargs)
+          TARGET_DEV=$(echo "${{ github.event.inputs.TARGET_DEVICE }}" | xargs)
+          TARGET_CSC=$(echo "${{ github.event.inputs.TARGET_DEVICE_CSC }}" | xargs)
+          IMEI_NUM=$(echo "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" | xargs)
+          
+          mkdir -p "FW/$TARGET_DEV"
+          
+          if [ -n "$URL" ]; then
+            echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط SamFW مباشر، جاري السحب السريع..."
+            curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+              -o "FW/$TARGET_DEV/samfw_firmware.zip" "$URL" || { echo "❌ فشل تحميل الرابط المباشر!"; exit 1; }
+            
+            echo "📦 جاري فك ضغط ملف الـ ZIP المباشر داخل مجلد الفيرموير..."
+            cd "FW/$TARGET_DEV"
+            unzip samfw_firmware.zip || true
+            rm -f samfw_firmware.zip
+            cd ../..
+          else
+            echo "🔍 [الطريقة الثانية]: الرابط فارغ، جاري السحب التلقائي عبر السكريبت الأساسي..."
+            source scripts/QuantumRom.sh
+            DOWNLOAD_FIRMWARE "$TARGET_DEV" "$TARGET_CSC" "$IMEI_NUM" "FW" "${{ github.event.inputs.TARGET_FW_VERSION }}"
+          fi
 
       - name: Extract firmware
         run: |
@@ -82,7 +117,6 @@ jobs:
             "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" \
             "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"
 
-          # خطوة الضغط والتجميع (تم إصلاح الإغلاق التلقائي لها)
       - name: Compress all .img & make zip file before upload.
         run: |
           echo "BUILD_TIME=$(TZ='Asia/Dhaka' date '+%Y-%m-%d %I:%M:%S %p UTC+6')" >> $GITHUB_ENV
@@ -99,7 +133,7 @@ jobs:
             done
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img.xz -mx=5
           else
-            echo "🚀 تخطي ضغط XZ.. جاري تجميع ملف الـ ZIP مباشرة للحفاظ على السرعة..."
+            echo "⚡ [وضع السرعة]: تخطي ضغط XZ وتجميع الـ ZIP فوراً..."
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5
           fi
           echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
