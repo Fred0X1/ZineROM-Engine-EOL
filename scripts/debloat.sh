@@ -1,11 +1,10 @@
 #!/bin/bash
 
-
 # GENERAL / SYSTEM / BLOAT
 DEBLOAT_APPS=(
 "HMT" "PaymentFramework" "DigitalWellbeing" "FactoryCameraFB"
 "WlanTest" "AirGlance" "AirReadingGlass" "AndroidGlassesCore"
-"SOAgent77" "ARCore" "ARDrawing" "ARZone" "BGMProvider"
+"ARCore" "ARDrawing" "ARZone" "BGMProvider"
 "SingleTakeService" "BlockchainBasicKit"
 "Cameralyzer" "DictDiotekForSec" "EasymodeContactsWidget81"
 "Fast" "FunModeSDK" "GearManagerStub" "KidsHome_Installer"
@@ -16,7 +15,6 @@ DEBLOAT_APPS=(
 "VoiceAccess" "VTCameraSetting"
 "WebManual" "WifiGuider" "AutomationTest_FB" "FactoryTestProvider"
 )
-
 
 # KOREAN / CARRIER APPS
 CARRIER_APPS=(
@@ -32,7 +30,6 @@ CARRIER_APPS=(
 "UsimRegistrationKOR" "HpsAgreement_new" "KTAuth_Stub"
 )
 
-
 # SAMSUNG FEATURES / APPS
 SAMSUNG_APPS=(
 "SamsungCalendar" "SamsungTTS" "SamsungBilling"
@@ -45,7 +42,6 @@ SAMSUNG_APPS=(
 "StickerFaceARAvatar" "sticker"
 )
 
-
 # GOOGLE APPS
 GOOGLE_APPS=(
 "SpeechServicesByGoogle" "Maps" "Duo" "Photos"
@@ -56,12 +52,10 @@ GOOGLE_APPS=(
 "SamsungMessages" "SearchSelector" "PlayAutoInstallConfig" "FamilyLinkParentalControls"
 )
 
-
 # FACEBOOK
 FACEBOOK_APPS=(
 "FBAppManager_NS" "FBInstaller_NS" "FBServices"
 )
-
 
 # DRIVERS
 HARDWARE_DRIVERS=(
@@ -69,30 +63,22 @@ HARDWARE_DRIVERS=(
 "GameDriver-EX2100" "GameDriver-EX2200" "GameDriver-SM8150"
 )
 
-
 # MISC / SERVICES
 MISC_SERVICES=(
 "AuthFramework" "Discover" "DiscoverSEP"
-"EarphoneTypeC" "EasySetup" "FotaAgent"
-"HashTagService" "LedCoverService"
+"EarphoneTypeC" "EasySetup" "HashTagService" "LedCoverService"
 "LinkToWindowsService" "MemorySaver_O_Refresh"
 "OMCAgent5" "OneStoreService" "FactoryAirCommandManager"
-"SOAgent7" "SOAgent75" "SOAgent76"
 "SolarAudio-service" "SPPPushClient"
 "SumeNNService" "SVoiceIME"
-"SwiftkeyIme" "SwiftkeySetting"
-"SystemUpdate" "TADownloader"
-"TalkbackSE" "TaPackAuthFw"
-"UltraDataSaving_O" "Upday"
-"YourPhone_P1_5" "DsmsAPK"
-"vexfwk_service" "VexScanner"
+"SwiftkeyIme" "SwiftkeySetting" "TADownloader" 
+"TalkbackSE" "TaPackAuthFw" "UltraDataSaving_O" "Upday" 
+"YourPhone_P1_5" "DsmsAPK" "vexfwk_service" "VexScanner" 
 "LiveEffectService" "MyGalaxyService"
 )
 
-
 # Knox
 KNOX_APPS=("Rampart" "KnoxFrameBufferProvider")
-
 
 REMOVE_ESIM_FILES() {
     if [ "$#" -ne 1 ]; then
@@ -116,7 +102,6 @@ REMOVE_ESIM_FILES() {
 	rm -rf "$EXTRACTED_FIRM_DIR/system/system/priv-app/EuiccGoogle"
 }
 
-
 REMOVE_FABRIC_CRYPTO() {
     if [ "$#" -ne 1 ]; then
         echo -e "Usage: ${FUNCNAME[0]} <EXTRACTED_FIRM_DIR>"
@@ -138,7 +123,6 @@ REMOVE_FABRIC_CRYPTO() {
     rm -rf "$EXTRACTED_FIRM_DIR/system/system/lib64/vendor.samsung.hardware.security.fkeymaster-V1-ndk.so"
     rm -rf "$EXTRACTED_FIRM_DIR/system/system/priv-app/KmxService"
 }
-
 
 KICK() {
     if [ "$#" -lt 2 ]; then
@@ -167,7 +151,6 @@ KICK() {
         done
     done
 }
-
 
 DEBLOAT() {
     echo -e ""
