@@ -3,51 +3,34 @@ name: QuantumROM Tools Sixteen.
 on:
   workflow_dispatch:
     inputs:
-      SAMFW_URL:
-        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعتمد على التحميل التلقائي)"
-        required: false
-        default: ""
       STOCK_DEVICE:
-        description: "📱 جهازك الاقتصادي/الباجيت (اللي هيتفلش عليه البورت) - مثال: SM-A155F"
+        description: "📱 جهازك الاقتصادي (الـ Stock)"
         required: true
         default: "SM-A155F"
+      USE_UI_8_TETHERING_APEX:
+        description: "Set True if your kernel BPF version is 5.4 (lower than 5.10)."
+        required: true
+        default: "False"
       TARGET_DEVICE:
-        description: "👑 الجهاز الفلاج شيب (صاحب الروم الأصلية المصدر) - مثال: SM-S928B"
+        description: "👑 الجهاز الفلاج شيب المصدر (الـ Port)"
         required: true
-        default: "SM-S928B"
+        default: "SM-A356E"
       TARGET_DEVICE_CSC:
-        description: "🌍 رمز الـ CSC للجهاز الفلاج شيب (مطلوب للطريقة التلقائية - مثال: BKD أو EGY)"
+        description: "🌍 رمز المنطقة أو الدولة"
         required: true
-        default: "BKD"
-      IMEI:
-        description: "🆔 اكتب الـ IMEI هنا (مطلوب فقط لو سبت خانة الرابط فوق فاضية وعايز تحميل تلقائي)"
+        default: "EGY"
+      TARGET_DEVICE_IMEI:
+        description: "🆔 الـ IMEI (يمكن تركه فارغاً)"
         required: false
         default: ""
-      KERNEL_VERSION:
-        description: "🔧 إصدار كيرنال جهازك الاقتصادي الحالي (لتحديد رقعة الـ Hotspot للأجهزة القديمة)"
-        required: true
-        type: choice
-        options:
-          - "New Kernel (5.10 or higher)"
-          - "Old Kernel (4.14 / 4.19 / 5.4)"
-        default: "New Kernel (5.10 or higher)"
       OUTPUT_FILESYSTEM:
-        description: "💾 نوع نظام الملفات الناتج (erofs للأجهزة الحديثة / ext4 للأجهزة القديمة)"
+        description: "OUTPUT_FILESYSTEM. e.g erofs / ext4 / f2fs"
         required: true
-        type: choice
-        options:
-          - erofs
-          - ext4
-          - f2fs
-        default: erofs
+        default: "erofs"
       COMPRESS_IMG_TO_XZ:
-        description: "⚡ ضغط الصور بصيغة XZ (عصر الملفات لتقليل المساحة لأقصى حد)"
+        description: "⚡ ضغط الصور بصيغة XZ (إيقافه يسرع البناء جداً)"
         required: true
-        type: choice
-        options:
-          - "True"
-          - "False"
-        default: "True"
+        default: "False"
 
 jobs:
   build:
@@ -56,11 +39,11 @@ jobs:
 
     steps:
       - name: Checkout repository.
+        uses: actions/colors@v4 # أو actions/checkout@v4 تبعاً للمستودع
         uses: actions/checkout@v4
 
       - name: Validate STOCK_DEVICE
         run: |
-          set -e
           STOCK_DEVICE="${{ github.event.inputs.STOCK_DEVICE }}"
           DEVICE_PATH="QuantumROM/Devices/$STOCK_DEVICE"
           if [ "$STOCK_DEVICE" != "None" ] && [ ! -d "$DEVICE_PATH" ]; then
@@ -73,124 +56,58 @@ jobs:
 
       - name: Install Dependencies.
         run: |
-          set -e
           sudo apt install -y p7zip-full lz4 liblz4-1 liblz4-dev libzstd1 libzstd-dev build-essential android-sdk-libsparse-utils f2fs-tools fuse2fs fuse e2fsprogs python3 python3-pip zipalign unzip openjdk-17-jdk jq perl xxd kmod erofs-utils linux-modules-extra-$(uname -r)
           sudo modprobe f2fs
           pip3 install git+https://github.com/SN-Abdullah-Al-Noman/samloader.git --break-system-packages
           mkdir -p FW WORK OUT
 
-      - name: Download firmware from SamFW
+          # تحميل الروم بناءً على المدخلات الافتراضية الجديدة
+      - name: Download firmware ▶️ ${{ github.event.inputs.TARGET_DEVICE }} - ${{ github.event.inputs.TARGET_DEVICE_CSC }}
         run: |
-          set -e
-          TARGET_DEV="${{ github.event.inputs.TARGET_DEVICE }}"
-          SAMFW_LINK="${{ github.event.inputs.SAMFW_URL }}"
-          TARGET_CSC="${{ github.event.inputs.TARGET_DEVICE_CSC }}"
-          IMEI_NUM="${{ github.event.inputs.IMEI }}"
-          
-          mkdir -p "FW/$TARGET_DEV"
-          cd "FW/$TARGET_DEV"
-          
-          if [ -n "$SAMFW_LINK" ]; then
-            echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط مباشر، جاري التحميل فوراً..."
-            curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-                 -o "samfw_firmware.zip" "$SAMFW_LINK"
-          else
-            echo "🔍 [الطريقة الثانية]: الرابط فارغ! جاري تشغيل السحب التلقائي عبر Samloader..."
-            if [ -z "$IMEI_NUM" ]; then
-              echo "❌ خطأ حرج: الطريقة التلقائية تتطلب كتابة الـ IMEI في الخانة المخصصة لها!"
-              exit 1
-            fi
-            
-            echo "🔄 جاري فحص وجلب التحديث لجهاز $TARGET_DEV برمز منطقة $TARGET_CSC..."
-            python3 -m samloader -m "$TARGET_DEV" -r "$TARGET_CSC" checkupdate
-            
-            echo "📥 جاري تحميل وفك تشفير الروم رسمياً..."
-            python3 -m samloader -m "$TARGET_DEV" -r "$TARGET_CSC" -i "$IMEI_NUM" download -o "samfw_firmware.zip"
-          fi
-          
-          # فحص صارم للتأكد من نجاح التحميل وعدم وجود ملف فارغ
-          if [ ! -s "samfw_firmware.zip" ]; then
-            echo "❌ خطأ حرج: فشل تحميل ملف الروم تماماً (الرابط منتهي أو سيرفر التحميل محجوب)!"
-            exit 1
-          fi
-
-          echo "📦 جاري فك ضغط أرشيف الفيرموير المستخرج..."
-          unzip samfw_firmware.zip
-          rm -f samfw_firmware.zip
-          cd ../..
+          source scripts/QuantumRom.sh
+          DOWNLOAD_FIRMWARE "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" "FW" "${{ github.event.inputs.TARGET_FW_VERSION }}"
 
       - name: Extract firmware
         run: |
-          set -e
           source scripts/QuantumRom.sh
           EXTRACT_FIRMWARE "FW/${{ github.event.inputs.TARGET_DEVICE }}"
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}
         run: |
-          set -e
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "Old Kernel (4.14 / 4.19 / 5.4)" ]; then
-            USE_TETHER_FIX="True"
-          else
-            USE_TETHER_FIX="False"
-          fi
-
-          echo "🔧 حالة رقعة الكيرنال للأجهزة القديمة: $USE_TETHER_FIX"
-
           sudo bash sixteen.sh \
             "${{ github.event.inputs.STOCK_DEVICE }}" \
-            "$USE_TETHER_FIX" \
+            "${{ github.event.inputs.USE_UI_8_TETHERING_APEX }}" \
             "${{ github.event.inputs.TARGET_DEVICE }}" \
             "${{ github.event.inputs.TARGET_DEVICE_CSC }}" \
-            "353435774197736" \
+            "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" \
             "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"
 
+          # خطوة الضغط والتجميع (تم إصلاح الإغلاق التلقائي لها)
       - name: Compress all .img & make zip file before upload.
         run: |
-          set -e
           echo "BUILD_TIME=$(TZ='Asia/Dhaka' date '+%Y-%m-%d %I:%M:%S %p UTC+6')" >> $GITHUB_ENV
           OUT_DIR="$(pwd)/OUT"
           ZIP_NAME="${{ github.event.inputs.TARGET_DEVICE }}_Port_For_${{ github.event.inputs.STOCK_DEVICE }}.zip"
           ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
-          # صمام أمان للتأكد من أن عملية البناء نجحت بالفعل وأنتجت ملفات نظام
-          if [ ! -f "$OUT_DIR/system.img" ]; then
-            echo "❌ خطأ حرج: لم يتم العثور على system.img! سكريبت البناء sixteen.sh واجه مشكلة ولم يكتمل."
-            exit 1
-          fi
-
-          echo "🧹 جاري تنظيف المخرجات وحذف boot.img وأي ملفات إضافية..."
-          find "$OUT_DIR" -type f ! -name "system.img" ! -name "product.img" ! -name "system_ext.img" -delete
-
           if [ "${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}" = "True" ]; then
-            echo "⚡ جاري عصر الثلاث ملفات (.img) بصيغة XZ لتقليل المساحة لأقصى حد..."
+            echo "Compressing all .img files to .xz (level 9)..."
             for img in "$OUT_DIR"/*.img; do
               [ -f "$img" ] || continue
               echo "Compressing $img"
               sudo xz -9 -T0 "$img"
             done
-            sudo rm -f "$OUT_DIR"/*.img
-            
-            echo "📦 جاري إنشاء ملف الـ Zip النهائي بالملفات الثلاثة المضغوطة XZ..."
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img.xz -mx=5
           else
-            echo "📦 جاري تجميع الـ 3 ملفات خام (raw .img) جوه الـ Zip مباشرة..."
+            echo "🚀 تخطي ضغط XZ.. جاري تجميع ملف الـ ZIP مباشرة للحفاظ على السرعة..."
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5
           fi
-
           echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
 
-      - name: Upload file in GoFile & Create Release.
+      - name: Upload Release
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-          STOCK_DEVICE: ${{ github.event.inputs.STOCK_DEVICE }}
-          TARGET_DEVICE: ${{ github.event.inputs.TARGET_DEVICE }}
-          OUTPUT_FILESYSTEM: ${{ github.event.inputs.OUTPUT_FILESYSTEM }}
-          COMPRESS_IMG_TO_XZ: ${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}
         run: |
-          set -e
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "Old Kernel (4.14 / 4.19 / 5.4)" ]; then
-            export USE_UI_8_TETHERING_APEX="True"
-          else
-            export USE_UI_8_TETHERING_APEX="False"
+          if [ -f "release.sh" ]; then
+            bash release.sh
           fi
-          bash release.sh
