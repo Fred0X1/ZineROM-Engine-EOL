@@ -1,4 +1,4 @@
-name: QuantumROM Tools Sixteen.
+name: ZineROM Engine Sixteen.
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ on:
 
 jobs:
   build:
-    name: Start QuantumROM Tools Sixteen.
+    name: Start ZineROM Engine Sixteen.
     runs-on: ubuntu-24.04
 
     steps:  
@@ -61,7 +61,7 @@ jobs:
       - name: Validate STOCK_DEVICE  
         run: |  
           STOCK_DEVICE="${{ github.event.inputs.STOCK_DEVICE }}"  
-          DEVICE_PATH="QuantumROM/Devices/$STOCK_DEVICE"  
+          DEVICE_PATH="ZineROM/Devices/$STOCK_DEVICE"  
           if [ "$STOCK_DEVICE" != "None" ] && [ ! -d "$DEVICE_PATH" ]; then  
             echo "❌ $STOCK_DEVICE is not supported with this tool."  
             exit 1  
@@ -79,7 +79,6 @@ jobs:
 
       - name: Download or Fetch Firmware  
         run: |  
-          # تنظيف الرابط تماماً من أي رموز مخفية أو مسافات أو علامات تنصيص زائدة
           URL=$(echo "${{ github.event.inputs.SAMFW_URL }}" | tr -d '\r' | xargs)
           URL=$(echo "$URL" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
           
@@ -91,7 +90,6 @@ jobs:
             
           if [ -n "$URL" ]; then  
             echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط SamFW مباشر، جاري السحب السريع..."  
-            # الأمر هنا في سطر واحد تماماً بدون أي كسر للسطر لضمان عدم حدوث أخطاء
             curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -o "FW/$TARGET_DEV/samfw_firmware.zip" "$URL" || { echo "❌ فشل تحميل الرابط المباشر!"; exit 1; }  
               
             echo "📦 جاري فك ضغط ملف الـ ZIP المباشر داخل مجلد الفيرموير..."  
@@ -101,23 +99,21 @@ jobs:
             cd ../..  
           else  
             echo "🔍 [الطريقة الثانية]: الرابط فارغ، جاري السحب التلقائي عبر السكريبت الأساسي..."  
-            source scripts/QuantumRom.sh  
+            source scripts/ZineRom.sh  
             DOWNLOAD_FIRMWARE "$TARGET_DEV" "$TARGET_CSC" "$IMEI_NUM" "FW" "${{ github.event.inputs.TARGET_FW_VERSION }}"  
           fi  
 
       - name: Extract firmware  
         run: |  
-          source scripts/QuantumRom.sh  
+          source scripts/ZineRom.sh  
           EXTRACT_FIRMWARE "FW/${{ github.event.inputs.TARGET_DEVICE }}"  
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}  
         run: |  
           sudo bash sixteen.sh \  
             "${{ github.event.inputs.STOCK_DEVICE }}" \  
-            "${{ github.event.inputs.USE_UI_8_TETHERING_APEX }}" \  
             "${{ github.event.inputs.TARGET_DEVICE }}" \  
             "${{ github.event.inputs.TARGET_DEVICE_CSC }}" \  
-            "${{ github.event.inputs.TARGET_DEVICE_IMEI }}" \  
             "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"  
 
       - name: Compress specific images & make zip file before upload  
@@ -136,7 +132,7 @@ jobs:
               if [ -f "$file" ]; then  
                 echo "⚡ جاري ضغط الملف: $file"  
                 sudo xz -9 -T0 "$file"  
-              else  
+                  else  
                 echo "⚠️ الملف $file غير موجود في مجلد المخرجات، سيتم تخطيه."  
               fi  
             done  
