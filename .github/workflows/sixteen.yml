@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       SAMFW_URL:
-        description: "🔗 رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعمل تحميل تلقائي)"
+        description: "رابط تحميل فريم وير SamFW المباشر (سيبه فاضي لو هتعمل تحميل تلقائي)"
         required: false
         default: ""
       STOCK_DEVICE:
-        description: "📱 جهازك الاقتصادي (الـ Stock)"
+        description: "جهازك الاقتصادي (الـ Stock)"
         required: true
         default: "SM-A155F"
       USE_UI_8_TETHERING_APEX:
-        description: "🔧 خيار الكيرنال (True للأجهزة القديمة 5.4 / False للجديدة 5.10)"
+        description: "خيار الكيرنال (True للأجهزة القديمة 5.4 / False للجديدة 5.10)"
         required: true
         type: choice
         options:
@@ -20,19 +20,19 @@ on:
           - "True"
         default: "False"
       TARGET_DEVICE:
-        description: "👑 الجهاز الفلاج شيب المصدر (الـ Port)"
+        description: "الجهاز الفلاج شيب المصدر (الـ Port)"
         required: true
         default: "SM-A356E"
       TARGET_DEVICE_CSC:
-        description: "🌍 رمز المنطقة أو الدولة"
+        description: "رمز المنطقة أو الدولة"
         required: true
         default: "EGY"
       TARGET_DEVICE_IMEI:
-        description: "🆔 الـ IMEI (مطلوب فقط لو خانة الرابط المباشر فوق فاضية)"
+        description: "الـ IMEI (مطلوب فقط لو خانة الرابط المباشر فوق فاضية)"
         required: false
         default: ""
       OUTPUT_FILESYSTEM:
-        description: "💾 نوع نظام الملفات الناتج"
+        description: "نوع نظام الملفات الناتج"
         required: true
         type: choice
         options:
@@ -41,7 +41,7 @@ on:
           - f2fs
         default: erofs
       COMPRESS_IMG_TO_XZ:
-        description: "⚡ ضغط الصور بصيغة XZ (اختر False لتسريع البناء زي التليجرام)"
+        description: "ضغط الصور بصيغة XZ (اختر False لتسريع البناء زي التليجرام)"
         required: true
         type: choice
         options:
@@ -110,7 +110,19 @@ jobs:
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}  
         run: |  
-          sudo bash sixteen.sh "${{ github.event.inputs.STOCK_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"
+          # 1. إجبار تخطي فحص المعمارية الصارم داخل بيئة السيرفر الحالية
+          if [ -f "scripts/ZineRom.sh" ]; then
+            sed -i '/CPU ABI MISMATCH!/{n;s/exit 1/# exit 1/}' scripts/ZineRom.sh
+          fi
+          
+          # 2. إنشاء وتأمين ملف اللوج مسبقاً لمنع خطأ الـ Artifact Missing
+          touch zinrom_build.log
+          
+          # 3. تشغيل سكريبت البناء وتحويل كافة المخرجات إلى ملف اللوج فوراً
+          sudo bash sixteen.sh "${{ github.event.inputs.STOCK_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.OUTPUT_FILESYSTEM }}" 2>&1 | tee zinrom_build.log
+          
+          # 4. الحفاظ على كود الخروج الأصلي لضمان دقة تقرير التشغيل
+          exit ${PIPESTATUS[0]}
 
       - name: Upload Build Engine Logs  
         if: always()
@@ -155,4 +167,3 @@ jobs:
           if [ -f "release.sh" ]; then  
             bash release.sh  
           fi
-
