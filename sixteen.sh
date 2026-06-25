@@ -1,17 +1,20 @@
 #!/bin/bash
 
-if [ "$#" -lt 6 ]; then
-    echo "Usage: $0 <STOCK_DEVICE> <USE_UI_8_TETHERING_APEX> <TARGET_DEVICE> <TARGET_DEVICE_CSC> <TARGET_DEVICE_IMEI> <OUTPUT_FILESYSTEM>"
+# الفحص الجديد: محتاجين 4 متغيرات أساسية بس
+if [ "$#" -lt 4 ]; then
+    echo "Usage: $0 <STOCK_DEVICE> <TARGET_DEVICE> <TARGET_DEVICE_CSC> <OUTPUT_FILESYSTEM>"
     exit 1
 fi
 
-# Device info
+# ترتيب المتغيرات الجديد بعد حذف الزيادات
 export STOCK_DEVICE="$1"
-export USE_UI_8_TETHERING_APEX="$2"
-export TARGET_DEVICE="$3"
-export TARGET_DEVICE_CSC="$4"
-export TARGET_DEVICE_IMEI="$5"
-export OUTPUT_FILESYSTEM="$6"
+export TARGET_DEVICE="$2"
+export TARGET_DEVICE_CSC="$3"
+export OUTPUT_FILESYSTEM="$4"
+
+# قيم افتراضية ثابتة داخلية عشان السكربتات التانية متضربش لو بتطلبها
+export USE_UI_8_TETHERING_APEX="false"
+export TARGET_DEVICE_IMEI="000000000000000"
 
 VERSION="1"
 
@@ -67,3 +70,4 @@ BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} ${
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} ${B_V} V-${VERSION}: ZineROM"
 
 BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "all" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+
