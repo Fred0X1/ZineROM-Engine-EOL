@@ -110,11 +110,15 @@ jobs:
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}  
         run: |  
-          sudo bash sixteen.sh \  
-            "${{ github.event.inputs.STOCK_DEVICE }}" \  
-            "${{ github.event.inputs.TARGET_DEVICE }}" \  
-            "${{ github.event.inputs.TARGET_DEVICE_CSC }}" \  
-            "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"  
+          sudo bash sixteen.sh "${{ github.event.inputs.STOCK_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.OUTPUT_FILESYSTEM }}"
+
+      - name: Upload Build Engine Logs  
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZineROM-Build-Logs
+          path: zinrom_build.log
+          retention-days: 7
 
       - name: Compress specific images & make zip file before upload  
         run: |  
