@@ -43,7 +43,7 @@ Experience unrestricted flagship artificial intelligence, optimized to execute e
 * **Universal Dual Messenger:** Overridden framework restrictions to allow cloning and dual-instance execution for all installed applications.
 
 ### Underlying Optimization and Base Architecture
-* **Monolithic Base Fusion:** Compiled using the latest stable flagship branches from Galaxy S23 FE, A35, S21 FE, and S24+ firmwares[span_2](start_span)[span_2](end_span).
+* **Monolithic Base Fusion:** Compiled using the latest stable flagship branches from Galaxy S23 FE, A35, S21 FE, and S24+ firmwares
 * **EROFS Powered Filesystem:** Read-only system partitions are strictly packed using EROFS to guarantee maximum compression, faster random-read speeds, and zero system degradation over time.
 * **Deep Debloating:** Completely stripped of unnecessary background tracking services, duplicate carrier utilities, and battery-draining telemetry scripts.
 
