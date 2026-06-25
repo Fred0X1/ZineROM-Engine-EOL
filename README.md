@@ -14,68 +14,45 @@ Maintained by: @zinefather
 
 ⚙️ ZineROM Engine
 
-ZineROM Engine is the core system layer behind all ZineROM builds.
+ZineROM Engine is the core system layer running behind all ZineROM builds and project infrastructure;
 
-It provides a unified modification framework that enables:
+# Comprehensive Feature Sheet (ZineROM Update 8.5)
 
-Deep system-level modifications
-
-Runtime performance tuning and optimization
-
-Framework and UI behavior enhancements
-
-Modular compatibility layer for different builds
-
-System service refinement and cleanup logic
-
-UX consistency across modified components
-
-
-The engine is designed to enable high-level system control without breaking core structure stability.
-
+ZineROM Engine goes beyond standard application porting by fully reconstructing the core system framework[span_0](start_span)[span_0](end_span). This ensures a true, uncompromised flagship experience seamlessly backported to mid-range hardware[span_1](start_span)[span_1](end_span). Below is an analytical breakdown of the architectural and user-facing features integrated into this release.
 
 ---
 
-📱 ZineROM Project Overview
+### Full-Scale Galaxy AI Suite (Next-Gen Intelligence)
+Experience unrestricted flagship artificial intelligence, optimized to execute efficiently without introducing system overhead:
+* **Writing and Note Assist:** Advanced contextual text rewriting, auto-formatting, automated summaries, and system-wide spelling corrections.
+* **Semantic Search and Interpreter:** High-speed local data indexing alongside real-time conversation translation modules.
+* **Drawing and Creative Assist:** Generative sketching tools and intelligent image interpretation frameworks.
+* **Browsing, Call, and Transcript Assist:** Automated web article summarization, real-time call translation, and smart voice-to-text audio scrubbing.
+* **Advanced Media Erasers:** Complete native integration of Object Eraser, Shadow Eraser, Reflection Eraser, and Audio Eraser.
 
-ZineROM focuses on advanced Android system customization with emphasis on UI refinement, performance tuning, and feature expansion beyond stock limitations.
+### Flagship Visuals and Premium Framework Injection
+* **ZineROM Update Screen 8.5:** An exclusive, integrated system update dashboard alongside customized UI compilation layouts.
+* **High-End Animation Scaling:** Full flagship transition physics injected directly into the core animator framework.
+* **Native and Live Blur Engine:** Real-time Gaussian blur processing enabled system-wide across the notification panel and application windows.
+* **AOD Clock Transition Support:** Seamless, uninterrupted display handoff from the Always On Display to the secure lock screen.
+* **Adaptive Color Tone and Refresh Rate:** Active system monitoring to adjust screen warmth and dynamically scale refresh rates based on active content.
+* **Extra Brightness Mode:** Decouples hardware-level restrictions to unlock maximum display nit levels under direct sunlight conditions.
 
-This project is built around high system modification depth, including:
+### Advanced Imaging and System Ergonomics
+* **Picture Remaster and Image Clipper:** High-fidelity photo restoration algorithms and smart long-press object lifting from the native gallery.
+* **Samsung DeX Support:** Full desktop environment execution unlocked natively (Note: *DeX via HDMI requires target hardware with USB-C DisplayPort support*).
+* **Camera Privacy Toggle:** Hardware-level privacy masking executed via a native system quick-setting tile.
+* **Multi-User Profiles:** Complete isolated space provisioning for independent user environments on a single device configuration.
+* **Universal Dual Messenger:** Overridden framework restrictions to allow cloning and dual-instance execution for all installed applications.
 
-Advanced system feature injection
-
-Global “screenshot anywhere” functionality
-
-Highly debloated system environment (removal of unnecessary system apps)
-
-Enhanced animation system with smooth and refined transitions
-
-UI/UX restructuring for modern experience
-
-Performance-oriented system optimization
-
-Extended control over framework behavior and system services
+### Underlying Optimization and Base Architecture
+* **Monolithic Base Fusion:** Compiled using the latest stable flagship branches from Galaxy S23 FE, A35, S21 FE, and S24+ firmwares[span_2](start_span)[span_2](end_span).
+* **EROFS Powered Filesystem:** Read-only system partitions are strictly packed using EROFS to guarantee maximum compression, faster random-read speeds, and zero system degradation over time.
+* **Deep Debloating:** Completely stripped of unnecessary background tracking services, duplicate carrier utilities, and battery-draining telemetry scripts.
 
 
 
----
-
-🌟 Core Highlights
-
-Deep system modification architecture
-
-Enhanced UX and animation system
-
-Aggressive system debloating strategy
-
-Added global system-level features (e.g., screenshot anywhere)
-
-Performance-focused framework tuning
-
-Clean, optimized system environment
-
-Experimental UI enhancement layer powered by ZineROM Engine
-
+The engine is designed to enable high-level system control without breaking core structure stability 
 
 ---
 
@@ -109,4 +86,4 @@ https://t.me/customromerguy
 
 🧠 Credits
 
-ZineROM Engine development by zine and ZineROM 
+ZineROM Engine development by @Zinefather and ZineROM Team 
