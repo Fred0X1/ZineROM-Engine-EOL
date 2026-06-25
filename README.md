@@ -109,4 +109,4 @@ https://t.me/customromerguy
 
 🧠 Credits
 
-ZineROM Engine development by zine and QuantumROM 
+ZineROM Engine development by zine and ZineROM 

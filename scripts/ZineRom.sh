@@ -938,7 +938,7 @@ UPDATE_SDHMS() {
 	if [ "$USE_ALT_SDHMS_APP" = "TRUE" ]; then
         echo "- Adding alternative SDHMS app."
 		rm -rf "${EXTRACTED_FIRM_DIR}/system/priv-app/SamsungDeviceHealthManagerService"
-		cp -a "$(pwd)/QuantumROM/Mods/Apps/SDHMS/." "${EXTRACTED_FIRM_DIR}/system"
+		cp -a "$(pwd)/ZineROM/Mods/Apps/SDHMS/." "${EXTRACTED_FIRM_DIR}/system"
     fi
 }
 
@@ -1645,7 +1645,7 @@ FIX_BLUETOOTH() {
     if [ "$STOCK_DEVICE_CHIPSET" = "MediaTek" ] && [ "$BUILD_BRAND" != "MTK" ]; then
         echo "- Adding mediatek bluetooth apex."
         rm -f "${EXTRACTED_FIRM_DIR}"/system/system/apex/com.android.bt*.apex
-        cp -rfa "$(pwd)/QuantumROM/MTK_SPECIAL/${SDK}/BT_APEX/system/." "${EXTRACTED_FIRM_DIR}/system/system"
+        cp -rfa "$(pwd)/ZineROM/MTK_SPECIAL/${SDK}/BT_APEX/system/." "${EXTRACTED_FIRM_DIR}/system/system"
     fi
 }
 
@@ -1663,34 +1663,34 @@ FIX_CAMERA() {
     if [ "$STOCK_DEVICE_CHIPSET" = "MediaTek" ] && [ "$BUILD_BRAND" != "MTK" ]; then
         echo "- Adding mediatek camera related files."
 
-        if [ ! -s "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" ]; then
+        if [ ! -s "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" ]; then
             if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
                 wget --no-check-certificate \
                     "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" \
-                    -O "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip"
+                    -O "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip"
             else
                 echo "No internet connection available. Unable to download MTK_Camera_Files_Android_${ANDROID_VERSION}.zip."
                 return 1
             fi
         fi
 
-        if [ -s "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" ]; then
-            rm -rf "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}"
+        if [ -s "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" ]; then
+            rm -rf "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}"
 			REMOVE_CAMERA_FILES "$EXTRACTED_FIRM_DIR"
 
             unzip -o \
-                "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" \
-                -d "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}" \
+                "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}.zip" \
+                -d "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}" \
                 >/dev/null 2>&1
 
             sed -i \
-                "$((FIRST_CAM_LINE-1))r $(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}/system/etc/floating_feature.xml" \
+                "$((FIRST_CAM_LINE-1))r $(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}/system/etc/floating_feature.xml" \
                 "${EXTRACTED_FIRM_DIR}/system/system/etc/floating_feature.xml"
 
-			rm -rf "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}/system/etc/floating_feature.xml"
+			rm -rf "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}/system/etc/floating_feature.xml"
 
             echo "- Copying A34 mediatek camera related files."
-            cp -rfa "$(pwd)/QuantumROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}/system/." "${EXTRACTED_FIRM_DIR}/system/system"
+            cp -rfa "$(pwd)/ZineROM/Mods/Apps/MTK_Camera_Files_Android_${ANDROID_VERSION}/system/." "${EXTRACTED_FIRM_DIR}/system/system"
         fi
     fi
 }
@@ -1760,7 +1760,7 @@ APPLY_STOCK_CONFIG() {
 
     # Fix unsupported BPF error for kernels lower than 5.10.
     if [ "$USE_UI_8_TETHERING_APEX" = "True" ]; then
-        cp -rfa "$(pwd)/QuantumROM/Mods/Tethering_Apex/UI-8/." "${EXTRACTED_FIRM_DIR}/"
+        cp -rfa "$(pwd)/ZineROM/Mods/Tethering_Apex/UI-8/." "${EXTRACTED_FIRM_DIR}/"
     fi
 
     if [ "$STOCK_DEVICE_TYPE" = "jdm" ]; then
@@ -1900,7 +1900,7 @@ APPLY_JDM_SPECIAL() {
 
 	local EXTRACTED_FIRM_DIR="$1"
 	rm -rf "${EXTRACTED_FIRM_DIR}/system/system/priv-app/SamSungCamera"
-    cp -rfa "$(pwd)/QuantumROM/Mods/Apps/JDM_Special/SamSungCamera/." "${EXTRACTED_FIRM_DIR}/"
+    cp -rfa "$(pwd)/ZineROM/Mods/Apps/JDM_Special/SamSungCamera/." "${EXTRACTED_FIRM_DIR}/"
 }
 
 
@@ -1932,28 +1932,28 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
     # ================= SMART MANAGER =================
     echo "- Adding China smart manager."
 
-    if [ ! -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" ]; then
+    if [ ! -s "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" ]; then
         if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
             wget --no-check-certificate \
                 "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" \
-                -O "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip"
+                -O "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip"
         else
             echo "- No internet connection available. Unable to download: Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip"
             return 1
         fi
     fi
 
-    if [ -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" ]; then
-        rm -rf "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}"
-        unzip -o "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" \
-            -d "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}" >/dev/null 2>&1
+    if [ -s "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" ]; then
+        rm -rf "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}"
+        unzip -o "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}.zip" \
+            -d "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}" >/dev/null 2>&1
 
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/priv-app/AppLock"
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/priv-app/Firewall"
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/priv-app/SmartManager_v5"
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/priv-app/SmartManagerCN"
 
-        cp -rfa "$(pwd)/QuantumROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
+        cp -rfa "$(pwd)/ZineROM/Mods/Apps/Samsung_SmartManagerCN_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
 
         UPDATE_FLOATING_FEATURE "$FLOATING_FEATURE_FILE_DIRECTORY" \
             "SEC_FLOATING_FEATURE_SMARTMANAGER_CONFIG_PACKAGE_NAME" \
@@ -1963,22 +1963,22 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
     # ================= PHOTO EDITOR =================
     echo "- Adding Photo editor ai full."
 
-    if [ ! -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" ]; then
+    if [ ! -s "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" ]; then
         if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
             wget --no-check-certificate \
                 "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" \
-                -O "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip"
+                -O "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip"
         else
             echo "- No internet connection available. Unable to download: Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip"
             return 1
         fi
     fi
 
-    if [ -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" ]; then
-        rm -rf "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}"
+    if [ -s "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" ]; then
+        rm -rf "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}"
 
-        unzip -o "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" \
-            -d "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}" >/dev/null 2>&1
+        unzip -o "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}.zip" \
+            -d "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}" >/dev/null 2>&1
 
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/etc/ailasso"
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/etc/ailassomatting"
@@ -1989,7 +1989,7 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/etc/style_transfer"
         rm -rf "${EXTRACTED_FIRM_DIR}/system/system/priv-app"/PhotoEditor_*
 
-        cp -rfa "$(pwd)/QuantumROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
+        cp -rfa "$(pwd)/ZineROM/Mods/Apps/Samsung_PhotoEditor_AIFull_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
     fi
 
     # Fix Samsung AI Photo Editor app Crash.
@@ -2001,49 +2001,49 @@ ADD_SAMSUNG_FLAGSHIP_APPS() {
     # ================= OCR DATA PROVIDER =================
     echo "- Adding Samsung OCR Data Provider."
 
-    if [ ! -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
+    if [ ! -s "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
         if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
             wget --no-check-certificate \
                 "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
-                -O "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
+                -O "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
         else
             echo "- No internet connection available. Unable to download: Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip"
             return 1
         fi
     fi
 
-    if [ -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
-        rm -rf "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}"
-        unzip -o "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
-            -d "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}" >/dev/null 2>&1
+    if [ -s "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" ]; then
+        rm -rf "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}"
+        unzip -o "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}.zip" \
+            -d "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}" >/dev/null 2>&1
 
-        cp -rfa "$(pwd)/QuantumROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
+        cp -rfa "$(pwd)/ZineROM/Mods/Apps/Samsung_OCRDataProvider_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
 
 		if [ ! -d "${EXTRACTED_FIRM_DIR}/system/system/saiv/textrecognition" ]; then
-	        cp -rfa "$(pwd)/QuantumROM/Mods/Apps/OCR/." "${EXTRACTED_FIRM_DIR}/"
+	        cp -rfa "$(pwd)/ZineROM/Mods/Apps/OCR/." "${EXTRACTED_FIRM_DIR}/"
         fi
     fi
 
     # ================= IMPORTANT APPS =================
 	echo "- Adding Samsung Important Apps."
 
-    if [ ! -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
+    if [ ! -s "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
         if curl -fsSL --connect-timeout 5 https://www.google.com >/dev/null; then
             wget --no-check-certificate \
                 "https://github.com/SN-Abdullah-Al-Noman/Samsung_Special/releases/download/Android_${ANDROID_VERSION}/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
-               -O "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
+               -O "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
         else
             echo "No internet connection available. Unable to download: Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip"
             return 1
         fi
     fi
 
-    if [ -s "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
-        rm -rf "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}"
-        unzip -o "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
-            -d "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}" >/dev/null 2>&1
+    if [ -s "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" ]; then
+        rm -rf "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}"
+        unzip -o "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}.zip" \
+            -d "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}" >/dev/null 2>&1
 
-        cp -rfa "$(pwd)/QuantumROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
+        cp -rfa "$(pwd)/ZineROM/Mods/Apps/Samsung_Important_Apps_Android_${ANDROID_VERSION}/." "${EXTRACTED_FIRM_DIR}/"
     fi
 
     chown -R "$REAL_USER:$REAL_USER" "$EXTRACTED_FIRM_DIR"
@@ -2094,8 +2094,8 @@ APPLY_CUSTOM_FEATURES() {
 	chown -R "$REAL_USER:$REAL_USER" "$EXTRACTED_FIRM_DIR"
     chmod -R u+rwX "$EXTRACTED_FIRM_DIR"
 	
-	if [ -d "$(pwd)/QuantumROM/usefull_things" ]; then
-        cp -a "$(pwd)/QuantumROM/usefull_things/." "$(pwd)/OUT"
+	if [ -d "$(pwd)/ZineROM/usefull_things" ]; then
+        cp -a "$(pwd)/ZineROM/usefull_things/." "$(pwd)/OUT"
     fi
 }
 

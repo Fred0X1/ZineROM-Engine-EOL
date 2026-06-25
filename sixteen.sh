@@ -23,15 +23,15 @@ export FIRM_DIR="$(pwd)/FW"
 export OUT_DIR="$(pwd)/OUT"
 export WORK_DIR="$(pwd)/WORK"
 export APKTOOL="$(pwd)/bin/java/apktool.jar"
-export DEVICES_DIR="$(pwd)/QuantumROM/Devices"
-export VNDKS_COLLECTION="$(pwd)/QuantumROM/vndks"
-export SMART_MANAGER_CN="$(pwd)/QuantumROM/Mods/SMART_MANAGER_CN"
+export DEVICES_DIR="$(pwd)/ZineROM/Devices"
+export VNDKS_COLLECTION="$(pwd)/ZineROM/vndks"
+export SMART_MANAGER_CN="$(pwd)/ZineROM/Mods/SMART_MANAGER_CN"
 
 export BUILD_PARTITIONS="product,system_ext,system"
 
 # Source
 source "$(pwd)/scripts/debloat.sh"
-source "$(pwd)/scripts/QuantumRom.sh"
+source "$(pwd)/scripts/ZineRom.sh"
 
 #EXTRACT_FIRMWARE "$FIRM_DIR/$TARGET_DEVICE"
 EXTRACT_SUPER_IMG "$FIRM_DIR/$TARGET_DEVICE"
