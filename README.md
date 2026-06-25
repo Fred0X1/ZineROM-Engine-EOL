@@ -18,9 +18,6 @@ ZineROM Engine is the core system layer running behind all ZineROM builds and pr
 
 # Comprehensive Feature Sheet (ZineROM Update 8.5)
 
-ZineROM Engine goes beyond standard application porting by fully reconstructing the core system framework[span_0](start_span)[span_0](end_span). This ensures a true, uncompromised flagship experience seamlessly backported to mid-range hardware[span_1](start_span)[span_1](end_span). Below is an analytical breakdown of the architectural and user-facing features integrated into this release.
-
----
 
 ### Full-Scale Galaxy AI Suite (Next-Gen Intelligence)
 Experience unrestricted flagship artificial intelligence, optimized to execute efficiently without introducing system overhead:
