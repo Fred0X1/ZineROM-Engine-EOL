@@ -84,3 +84,4 @@ https://t.me/customromerguy
 🧠 Credits
 
 ZineROM Engine development by @Zinefather and ZineROM Team 
+(high modification fork of QuantumROM Tool)
