@@ -1,5 +1,6 @@
-
-<img width="640" height="640" alt="IMG_20260609_191356_086" src="https://github.com/user-attachments/assets/2f0f3c48-7432-4165-af34-fff8f8b22a30" />
+<p align="center">
+  <img src="ZineROM/logo/file_00000000920472468c600f5ff5ddbb49.png" alt="ZineROM Logo" width="280">
+</p>
 
 
 ---
