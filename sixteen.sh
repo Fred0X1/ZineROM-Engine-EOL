@@ -4,13 +4,10 @@
 #  ZineROM Engine Sixteen - Advanced Enterprise Logging Architecture #
 # ================================================================= #
 
-# 1. إعداد نظام الحماية وتحويل المخرجات الفوري (Global Log Redirection)
-# هذا السطر يضمن كتابة كل حرف يخرج من السكريبت (سواء عادي أو خطأ) داخل الملف فوراً
 export LOG_FILE="$(pwd)/zinrom_build.log"
 touch "$LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-# دالات الطباعة الممنهجة لتسهيل تحليل الذكاء الاصطناعي (AI Parsing Schema)
 log_stage() { echo -e "\n[$(date +'%H:%M:%S')] ==================== [STAGE: $1] ===================="; }
 log_info()  { echo -e "[$(date +'%H:%M:%S')] [INFO]  $1"; }
 log_success(){ echo -e "[$(date +'%H:%M:%S')] [SUCCESS] $1"; }
@@ -20,7 +17,6 @@ log_error() { echo -e "[$(date +'%H:%M:%S')] [ERROR] $1"; }
 log_stage "ENGINE INITIALIZATION"
 log_info "ZineROM Engine Version: Sixteen (Stable Core)"
 
-# التحقق من المتغيرات
 if [ "$#" -lt 4 ]; then
     log_error "Missing execution arguments. Expected 4, received $#."
     echo "Usage: $0 <STOCK_DEVICE> <TARGET_DEVICE> <TARGET_DEVICE_CSC> <OUTPUT_FILESYSTEM>"
@@ -34,9 +30,7 @@ export OUTPUT_FILESYSTEM="$4"
 
 export USE_UI_8_TETHERING_APEX="false"
 export TARGET_DEVICE_IMEI="000000000000000"
-VERSION="1"
 
-# إعلان مسارات البيئة البرمجية
 export FIRM_DIR="$(pwd)/FW"
 export OUT_DIR="$(pwd)/OUT"
 export WORK_DIR="$(pwd)/WORK"
@@ -48,7 +42,6 @@ export BUILD_PARTITIONS="product,system_ext,system"
 
 log_info "Target Config: Device=$STOCK_DEVICE | Base=$TARGET_DEVICE | CSC=$TARGET_DEVICE_CSC | FS=$OUTPUT_FILESYSTEM"
 
-# 2. الحل التلقائي لمنع كراش الـ ABI المشروح في الصورة 1782412990548.jpeg
 log_stage "PRE-FLIGHT SECURITY PATCHING"
 if [ -f "$(pwd)/scripts/ZineRom.sh" ]; then
     log_info "Injecting dynamic bypass for CPU ABI Mismatch inside framework dependency..."
@@ -59,11 +52,8 @@ else
     exit 1
 fi
 
-# استدعاء السكريبتات الأساسية بعد التعديل
 source "$(pwd)/scripts/debloat.sh"
 source "$(pwd)/scripts/ZineRom.sh"
-
-# 3. خط أنابيب التفكيك والمعالجة الموثق (Pipeline Execution)
 
 log_stage "FIRMWARE DECONSTRUCTION"
 log_info "Decompressing super image and firmware components..."
@@ -111,9 +101,10 @@ log_success "Recompilation complete. Modified binaries linked back to system."
 
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
-B_V="$(grep -m1 '^ro.system.build.version.incremental=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} ${B_V} V-${VERSION}: ZineROM"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} ${B_V} V-${VERSION}: ZineROM"
+
+# حقن الاسم النظيف بالبايب بدون أرقام فيرجن إضافية
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-V1.3"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-V1.3"
 log_success "Build properties updated with ZineROM identity flags."
 
 log_stage "FINAL IMAGE COMPILATION"
