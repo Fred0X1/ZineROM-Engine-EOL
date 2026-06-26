@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="ZineROM/logo/file_00000000920472468c600f5ff5ddbb49.png" alt="ZineROM Logo" width="280">
+  <img src="ZineROM/logo/file_00000000920472468c600f5ff5ddbb49.png" alt="ZineROM Logo" width="750">
 </p>
 
 
