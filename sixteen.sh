@@ -45,7 +45,8 @@ log_info "Target Config: Device=$STOCK_DEVICE | Base=$TARGET_DEVICE | CSC=$TARGE
 log_stage "PRE-FLIGHT SECURITY PATCHING"
 if [ -f "$(pwd)/scripts/ZineRom.sh" ]; then
     log_info "Injecting dynamic bypass for CPU ABI Mismatch inside framework dependency..."
-    sed -i '/CPU ABI MISMATCH!/{n;s/exit 1/# exit 1/}' "$(pwd)/scripts/ZineRom.sh"
+    # Safe multi-line range match to comment out exit 1 block
+    sed -i '/CPU ABI MISMATCH!/,/exit 1/ s/exit 1/# exit 1/' "$(pwd)/scripts/ZineRom.sh"
     log_success "Bypass verified and applied."
 else
     log_error "Critical dependency missing: scripts/ZineRom.sh not found."
@@ -102,7 +103,7 @@ log_success "Recompilation complete. Modified binaries linked back to system."
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
-# حقن الاسم النظيف بالبايب بدون أرقام فيرجن إضافية
+# Inject clean display ID without duplicate version tags
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-V1.3"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-V1.3"
 log_success "Build properties updated with ZineROM identity flags."
