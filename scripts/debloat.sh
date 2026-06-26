@@ -48,8 +48,9 @@ GOOGLE_APPS=(
 "AssistantShell" "BardShell" "DuoStub"
 "GoogleCalendarSyncAdapter" "AndroidDeveloperVerifier"
 "YourPhone_Stub" "AndroidAutoStub" "FamilyLinkParentalControls"
-"AndroidSystemIntelligence" "GoogleRestore"
-"SamsungMessages" "SearchSelector" "PlayAutoInstallConfig" "FamilyLinkParentalControls"
+# تم إزالة AndroidSystemIntelligence من هنا عشان ميمسحش ميزات الـ AI
+"GoogleRestore"
+"SamsungMessages" "SearchSelector" "PlayAutoInstallConfig"
 )
 
 # FACEBOOK
@@ -67,18 +68,23 @@ HARDWARE_DRIVERS=(
 MISC_SERVICES=(
 "AuthFramework" "Discover" "DiscoverSEP"
 "EarphoneTypeC" "EasySetup" "HashTagService" "LedCoverService"
-"LinkToWindowsService" "MemorySaver_O_Refresh"
+# "LinkToWindowsService" -> تم إيقاف حذفه لحماية اتصال الـ DeX
+"MemorySaver_O_Refresh"
 "OMCAgent5" "OneStoreService" "FactoryAirCommandManager"
 "SolarAudio-service" "SPPPushClient"
 "SumeNNService" "SVoiceIME"
 "SwiftkeyIme" "SwiftkeySetting" "TADownloader" 
 "TalkbackSE" "TaPackAuthFw" "UltraDataSaving_O" "Upday" 
-"YourPhone_P1_5" "DsmsAPK" "vexfwk_service" "VexScanner" 
+# "YourPhone_P1_5" -> تم إيقاف حذفه لضمان استقرار اتصالات الديكس والكمبيوتر
+"DsmsAPK" "vexfwk_service" "VexScanner" 
 "LiveEffectService" "MyGalaxyService"
 )
 
 # Knox
-KNOX_APPS=("Rampart" "KnoxFrameBufferProvider")
+KNOX_APPS=(
+"Rampart" 
+# "KnoxFrameBufferProvider" -> تم إيقاف حذفه نهائياً لأنه المسؤول عن عرض شاشة الـ DeX
+)
 
 REMOVE_ESIM_FILES() {
     if [ "$#" -ne 1 ]; then
@@ -102,26 +108,12 @@ REMOVE_ESIM_FILES() {
 	rm -rf "$EXTRACTED_FIRM_DIR/system/system/priv-app/EuiccGoogle"
 }
 
+# تم إيقاف الدالة دي مؤقتاً لأن حذف مكتبات تشفير السيستم بيكسر تشغيل واجهة الـ DeX الأمنية
 REMOVE_FABRIC_CRYPTO() {
-    if [ "$#" -ne 1 ]; then
-        echo -e "Usage: ${FUNCNAME[0]} <EXTRACTED_FIRM_DIR>"
-        return 1
-    fi
-
-	local EXTRACTED_FIRM_DIR="$1"
-    echo -e "- Removing fabric crypto."
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/bin/fabric_crypto"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/etc/init/fabric_crypto.rc"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/etc/permissions/FabricCryptoLib.xml"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/etc/vintf/manifest/fabric_crypto_manifest.xml"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/framework/FabricCryptoLib.jar"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/framework/oat/arm/FabricCryptoLib.odex"
-	rm -rf "$EXTRACTED_FIRM_DIR/system/system/framework/oat/arm/FabricCryptoLib.vdex"
-	rm -rf "$EXTRACTED_FIRM_DIR/system/system/framework/oat/arm64/FabricCryptoLib.odex"
-	rm -rf "$EXTRACTED_FIRM_DIR/system/system/framework/oat/arm64/FabricCryptoLib.vdex"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/lib64/com.samsung.security.fabric.cryptod-V1-cpp.so"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/lib64/vendor.samsung.hardware.security.fkeymaster-V1-ndk.so"
-    rm -rf "$EXTRACTED_FIRM_DIR/system/system/priv-app/KmxService"
+    echo -e "- Skipping fabric crypto removal to preserve DeX stability."
+    # local EXTRACTED_FIRM_DIR="$1"
+    # rm -rf "$EXTRACTED_FIRM_DIR/system/system/bin/fabric_crypto"
+    # ... بقية السطور تم تعطيلها حماية للبيلد
 }
 
 KICK() {
@@ -180,7 +172,7 @@ DEBLOAT() {
     KICK "$EXTRACTED_FIRM_DIR" "${KNOX_APPS[@]}"
 
     REMOVE_ESIM_FILES "$EXTRACTED_FIRM_DIR"
-	REMOVE_FABRIC_CRYPTO "$EXTRACTED_FIRM_DIR"
+	# REMOVE_FABRIC_CRYPTO "$EXTRACTED_FIRM_DIR" # تم تعطيلها لسلامة الـ Handshake الخاص بالـ DeX
 
 	echo -e "- Deleting unnecessary files and folders."
     rm -rf "$EXTRACTED_FIRM_DIR/system/system/app"/SamsungTTS*
@@ -197,3 +189,4 @@ DEBLOAT() {
 	rm -rf "$EXTRACTED_FIRM_DIR/product/app/YouTube/oat"
 	rm -rf "$EXTRACTED_FIRM_DIR/product/priv-app"/HotwordEnrollment*
 }
+
