@@ -89,8 +89,8 @@ jobs:
           mkdir -p "FW/$TARGET_DEV"  
             
           if [ -n "$URL" ]; then  
-            echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط SamFW مباشر، جاري السحب السريع..."  
-            curl -L -f -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -o "FW/$TARGET_DEV/samfw_firmware.zip" "$URL" || { echo "❌ فشل تحميل الرابط المباشر!"; exit 1; }  
+            echo "🚀 [الطريقة الأولى]: تم اكتشاف رابط SamFW مباشر، جاري السحب المستقر عبر HTTP/1.1..."  
+            curl --http1.1 -L -f --retry 5 --retry-delay 5 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -o "FW/$TARGET_DEV/samfw_firmware.zip" "$URL" || { echo "❌ فشل تحميل الرابط المباشر!"; exit 1; }  
               
             echo "📦 جاري فك ضغط ملف الـ ZIP المباشر داخل مجلد الفيرموير..."  
             cd "FW/$TARGET_DEV"  
@@ -110,18 +110,12 @@ jobs:
 
       - name: Start Rom Build For ${{ github.event.inputs.STOCK_DEVICE }}  
         run: |  
-          # 1. إجبار تخطي فحص المعمارية الصارم داخل بيئة السيرفر الحالية
           if [ -f "scripts/ZineRom.sh" ]; then
             sed -i '/CPU ABI MISMATCH!/{n;s/exit 1/# exit 1/}' scripts/ZineRom.sh
           fi
           
-          # 2. إنشاء وتأمين ملف اللوج مسبقاً لمنع خطأ الـ Artifact Missing
           touch zinrom_build.log
-          
-          # 3. تشغيل سكريبت البناء وتحويل كافة المخرجات إلى ملف اللوج فوراً
           sudo bash sixteen.sh "${{ github.event.inputs.STOCK_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE_CSC }}" "${{ github.event.inputs.OUTPUT_FILESYSTEM }}" 2>&1 | tee zinrom_build.log
-          
-          # 4. الحفاظ على كود الخروج الأصلي لضمان دقة تقرير التشغيل
           exit ${PIPESTATUS[0]}
 
       - name: Upload Build Engine Logs  
