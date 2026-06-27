@@ -45,7 +45,6 @@ log_info "Target Config: Device=$STOCK_DEVICE | Base=$TARGET_DEVICE | CSC=$TARGE
 log_stage "PRE-FLIGHT SECURITY PATCHING"
 if [ -f "$(pwd)/scripts/ZineRom.sh" ]; then
     log_info "Injecting dynamic bypass for CPU ABI Mismatch inside framework dependency..."
-    # Safe multi-line range match to comment out exit 1 block
     sed -i '/CPU ABI MISMATCH!/,/exit 1/ s/exit 1/# exit 1/' "$(pwd)/scripts/ZineRom.sh"
     log_success "Bypass verified and applied."
 else
@@ -100,10 +99,40 @@ mv -f "$WORK_DIR"/*.jar "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/"
 PATCH_BT_LIB "$FIRM_DIR/$TARGET_DEVICE" "$WORK_DIR"
 log_success "Recompilation complete. Modified binaries linked back to system."
 
+log_stage "UNICA SETTINGS INJECTION"
+SETTING_REPOS=(
+    "$FIRM_DIR/$TARGET_DEVICE/system/system/priv-app/SecSettings/SecSettings.apk"
+    "$FIRM_DIR/$TARGET_DEVICE/system/priv-app/SecSettings/SecSettings.apk"
+)
+
+TARGET_APK_PATH=""
+for path in "${SETTING_REPOS[@]}"; do
+    if [ -f "$path" ]; then
+        TARGET_APK_PATH="$path"
+        break
+    fi
+done
+
+if [ -n "$TARGET_APK_PATH" ]; then
+    log_info "Target SecSettings.apk localized at: $TARGET_APK_PATH"
+    java -jar "$APKTOOL" d "$TARGET_APK_PATH" -o "$WORK_DIR/extracted_settings" --force
+    
+    if [ -f "$(pwd)/settings.zip" ]; then
+        log_info "Injecting patch zip package into decompiled structure..."
+        unzip -o "$(pwd)/settings.zip" -d "$WORK_DIR/extracted_settings/"
+        java -jar "$APKTOOL" b "$WORK_DIR/extracted_settings" -o "$TARGET_APK_PATH" --use-aapt2
+        rm -rf "$WORK_DIR/extracted_settings"
+        log_success "SecSettings.apk patch injection phase complete."
+    else
+        log_warn "settings.zip file dependency missing from root directory. Injection skipped."
+    fi
+else
+    log_error "Unable to locate SecSettings.apk across localized infrastructure environments."
+fi
+
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
-# Inject clean display ID without duplicate version tags
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-V1.3"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-V1.3"
 log_success "Build properties updated with ZineROM identity flags."
