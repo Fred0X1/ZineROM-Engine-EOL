@@ -137,20 +137,18 @@ jobs:
           ls -la "$OUT_DIR"  
 
           if [ "${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}" = "True" ]; then  
-            echo "Compressing target files (system.img, product.img, system.ex*) to .xz (level 9)..."  
-            for file in "$OUT_DIR"/system.img "$OUT_DIR"/product.img "$OUT_DIR"/system.ex*; do  
+            echo "Compressing all generated .img files to .xz (level 9)..."  
+            for file in "$OUT_DIR"/*.img; do  
               if [ -f "$file" ]; then  
                 echo "⚡ جاري ضغط الملف: $file"  
                 sudo xz -9 -T0 "$file"  
-                  else  
-                echo "⚠️ الملف $file غير موجود في مجلد المخرجات، سيتم تخطيه."  
               fi  
             done  
-            echo "📦 تجميع الملفات المضغوطة داخل ملف الـ ZIP النهائي..."  
-            7z a -tzip "$ZIP_PATH" "$OUT_DIR"/system.img.xz "$OUT_DIR"/product.img.xz "$OUT_DIR"/system.ex*.xz -mx=5  
+            echo "📦 تجميع كل الملفات المضغوطة داخل ملف الـ ZIP النهائي..."  
+            7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img.xz -mx=5  
           else  
-            echo "⚡ [وضع السرعة]: تجميع الملفات المحددة مباشرة بدون ضغط XZ..."  
-            7z a -tzip "$ZIP_PATH" "$OUT_DIR"/system.img "$OUT_DIR"/product.img "$OUT_DIR"/system.ex* -mx=5  
+            echo "⚡ [وضع السرعة]: تجميع كل ملفات الـ .img مباشرة بدون ضغط XZ..."  
+            7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5  
           fi  
           echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV  
 
