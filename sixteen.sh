@@ -102,6 +102,15 @@ log_success "Recompilation complete. Modified binaries linked back to system."
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
+#mulit user support
+BUILD_PROP_PATH="$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop"
+if [ -f "$BUILD_PROP_PATH" ]; then
+    echo -e "\nfw.max_users=5\nfw.show_multiuserui=1" >> "$BUILD_PROP_PATH"
+    log_success "Multi-user patches injected into build.prop successfully."
+else
+    log_error "Could not find build.prop to inject multi-user settings!"
+fi
+
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-V2.0.1-Stable"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-V2.0.1-Stable"
 log_success "Build properties updated with ZineROM identity flags."
