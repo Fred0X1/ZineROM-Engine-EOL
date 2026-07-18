@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ================================================================= #
-#  ZineROM Engine Sixteen - Advanced Enterprise Logging Architecture #
+#  ZineROM Engine Sixteen - @zinefather #
 # ================================================================= #
 
 export LOG_FILE="$(pwd)/zinrom_build.log"
@@ -102,15 +102,41 @@ log_success "Recompilation complete. Modified binaries linked back to system."
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
-#mulit user support
-BUILD_PROP_PATH="$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop"
-if [ -f "$BUILD_PROP_PATH" ]; then
-    echo -e "\nfw.max_users=5\nfw.show_multiuserui=1" >> "$BUILD_PROP_PATH"
-    log_success "Multi-user patches injected into build.prop successfully."
-else
-    log_error "Could not find build.prop to inject multi-user settings!"
-fi
+log_info "Injecting performance, display, network, and multi-user properties..."
 
+# imri lose patch fix
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wifi.interface" "wlan0"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wlan.wfd.hdcp" "disable"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.hwui.renderer" "skiavk"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.hwui.use_vulkan" "true"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.telephony.sim_slots.count" "2"
+
+# Refresh Rate patch
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.protected_contents" "true"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.use_content_detection_for_refresh_rate" "true"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_idle_timer_ms" "250"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_touch_timer_ms" "300"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.enable_frame_rate_override" "true"
+
+# Multi user
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.max_users" "5"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.show_multiuserui" "1"
+
+# Performance patchrs
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.hwui.use_triple_buffering" "true"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.sf.disable_backpressure" "1"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.sf.enable_gl_backpressure" "0"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.sf.treat_170m_as_sRGB" "1"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.sf.predict_hwc_composition_strategy" "0"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.sf.enable_transaction_tracing" "false"
+
+# (MediaTek Performance Boost)
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "vendor.mtk_thumbnail_optimization" "true"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.mtk_perf_simple_start_win" "1"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.mtk_perf_fast_start_win" "1"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.mtk_perf_response_time" "1"
+
+# ZineROM build.prop id
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-V2.0.1-Stable"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-V2.0.1-Stable"
 log_success "Build properties updated with ZineROM identity flags."
