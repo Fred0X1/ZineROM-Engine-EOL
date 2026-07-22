@@ -9,10 +9,10 @@ STOCK_DEV="${STOCK_DEVICE:-Stock}"
 
 TAG_NAME="${TARGET_DEV}-$(date +%s)"
 
-# تنسيق المسمى المطلوبة: ZineROM Target OneUI Version Stock
+# تنسيق المسمى المطلوبة
 RELEASE_NAME="ZineROM ${TARGET_DEV} OneUI ${ONE_UI_VER} ${STOCK_DEV}"
 
-# اسم الملف المضغوط على GoFile
+# اسم الملف المضغوط
 NEW_ZIP_NAME="ZineROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
 NEW_ZIP_NAME=$(echo "$NEW_ZIP_NAME" | tr ' ' '_')
 
@@ -29,8 +29,14 @@ mv "$ZIP_PATH" "$NEW_ZIP_PATH"
 ZIP_PATH="$NEW_ZIP_PATH"
 
 echo "Uploading to GoFile..."
-GOFILE_LINK=$(sudo bash upload.sh "$ZIP_PATH")
-echo "🌎 File uploaded here: $GOFILE_LINK"
+if [ -f "upload.sh" ]; then
+  GOFILE_LINK=$(sudo bash upload.sh "$ZIP_PATH" || echo "FAILED_UPLOAD")
+else
+  echo "⚠️ upload.sh not found!"
+  GOFILE_LINK="FAILED_UPLOAD"
+fi
+
+echo "🌎 File uploaded status/link: $GOFILE_LINK"
 
 # File info
 FILE_SIZE=$(du -h "$ZIP_PATH" | cut -f1)
