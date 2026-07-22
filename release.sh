@@ -2,33 +2,27 @@
 
 set -e
 
-# Required env vars:
-# ZIP_PATH, GIT_TOKEN, BUILD_TIME
-# GitHub automatically provides: GITHUB_REPOSITORY
-
-# 1. إعطاء قيم افتراضية للمتغيرات تجنباً لظهور الأسماء الفارغة
-ONE_UI_VER="${ONE_UI_VERSION:-Unknown}"
-TARGET_DEV="${TARGET_DEVICE:-Target}"
-STOCK_DEV="${STOCK_DEVICE:-Stock}"
+# Required env vars from GITHUB_ENV or Fallbacks:
+ONE_UI_VER="${ONE_UI_VERSION:-7}"
+TARGET_DEV="${TARGET_DEVICE:-S24 FE}"
+STOCK_DEV="${STOCK_DEVICE:-A15 4G}"
 
 TAG_NAME="${TARGET_DEV}-$(date +%s)"
 
-# 2. التنسيق الجديد بناءً على المثال المطلوب
-# للـ GitHub Release: ZineROM S24 FE OneUI 7 A15 4G
+# تنسيق المسمى المطلوبة: ZineROM S24 FE OneUI 7 A15 4G
 RELEASE_NAME="ZineROM ${TARGET_DEV} OneUI ${ONE_UI_VER} ${STOCK_DEV}"
 
-# لاسم ملف الـ ZIP (تم استخدام الـ Underscore لتجنب المشاكل مع المسافات في الروابط)
+# اسم الملف المضغوط على GoFile (تأمين المسافات بشرطة سفليّة)
 NEW_ZIP_NAME="ZineROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
-# استبدالأي مسافات داخل اسم الملف بشارطة سفليّة _ لضمان سلامة الرفع
 NEW_ZIP_NAME=$(echo "$NEW_ZIP_NAME" | tr ' ' '_')
 
-# 3. التحقق من وجود ملف الـ ZIP قبل البدء
+# التأكد من وجود ملف ה-ZIP
 if [ -z "$ZIP_PATH" ] || [ ! -f "$ZIP_PATH" ]; then
   echo "❌ Error: ZIP_PATH is not set or file does not exist ($ZIP_PATH)!"
   exit 1
 fi
 
-# 4. إعادة تسمية الملف قبل الرفع
+# إعادة تسمية الملف قبل الرفع
 DIR_NAME=$(dirname "$ZIP_PATH")
 NEW_ZIP_PATH="${DIR_NAME}/${NEW_ZIP_NAME}"
 mv "$ZIP_PATH" "$NEW_ZIP_PATH"
@@ -54,10 +48,7 @@ $GOFILE_LINK
 #### 📱 Rom Info:
 • Ported For: $STOCK_DEV
 • Ported From: $TARGET_DEV
-• Build Version: ${VERSION:-N/A}
-• Android Version: ${ANDROID_VERSION:-N/A}
 • One UI Version: $ONE_UI_VER
-• CPU ABILIST: ${CPU_ABILIST:-N/A}
 
 #### ⚙️ Build Options:
 • Filesystem: ${OUTPUT_FILESYSTEM:-N/A}
@@ -83,5 +74,5 @@ if [ -n "$GIT_TOKEN" ]; then
       \"prerelease\": false
     }"
 else
-  echo "⚠️ GIT_TOKEN not found. Skipping GitHub release creation."
+  echo "⚠️ GIT_TOKEN not found. Skipping GitHub release."
 fi
