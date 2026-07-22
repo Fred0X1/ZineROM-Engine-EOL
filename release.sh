@@ -4,19 +4,19 @@ set -e
 
 # Required env vars from GITHUB_ENV or Fallbacks:
 ONE_UI_VER="${ONE_UI_VERSION:-7}"
-TARGET_DEV="${TARGET_DEVICE:-S24 FE}"
-STOCK_DEV="${STOCK_DEVICE:-A15 4G}"
+TARGET_DEV="${TARGET_DEVICE:-Target}"
+STOCK_DEV="${STOCK_DEVICE:-Stock}"
 
 TAG_NAME="${TARGET_DEV}-$(date +%s)"
 
-# تنسيق المسمى المطلوبة: ZineROM S24 FE OneUI 7 A15 4G
+# تنسيق المسمى المطلوبة: ZineROM Target OneUI Version Stock
 RELEASE_NAME="ZineROM ${TARGET_DEV} OneUI ${ONE_UI_VER} ${STOCK_DEV}"
 
-# اسم الملف المضغوط على GoFile (تأمين المسافات بشرطة سفليّة)
+# اسم الملف المضغوط على GoFile
 NEW_ZIP_NAME="ZineROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
 NEW_ZIP_NAME=$(echo "$NEW_ZIP_NAME" | tr ' ' '_')
 
-# التأكد من وجود ملف ה-ZIP
+# التأكد من وجود ملف الـ ZIP
 if [ -z "$ZIP_PATH" ] || [ ! -f "$ZIP_PATH" ]; then
   echo "❌ Error: ZIP_PATH is not set or file does not exist ($ZIP_PATH)!"
   exit 1
