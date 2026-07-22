@@ -6,19 +6,26 @@ set -e
 # ZIP_PATH, GIT_TOKEN, BUILD_TIME
 # GitHub automatically provides: GITHUB_REPOSITORY
 
-TAG_NAME="${TARGET_DEVICE}-$(date +%s)"
+# 1. إعطاء قيم افتراضية للمتغيرات تجنباً لظهور الأسماء الفارغة
+ONE_UI_VER="${ONE_UI_VERSION:-Unknown}"
+TARGET_DEV="${TARGET_DEVICE:-Target}"
+STOCK_DEV="${STOCK_DEVICE:-Stock}"
 
-# تنسيق الاسم الجديد ليشمل إصدار الـ One UI
-NEW_ZIP_NAME="ZineROM_OneUI_${ONE_UI_VERSION}_${TARGET_DEVICE}_${STOCK_DEVICE}.zip"
-RELEASE_NAME="ZineROM One UI ${ONE_UI_VERSION} ${TARGET_DEVICE} ${STOCK_DEVICE}"
+TAG_NAME="${TARGET_DEV}-$(date +%s)"
+NEW_ZIP_NAME="ZineROM_OneUI_${ONE_UI_VER}_${TARGET_DEV}_${STOCK_DEV}.zip"
+RELEASE_NAME="ZineROM One UI ${ONE_UI_VER} ${TARGET_DEV} ${STOCK_DEV}"
 
-# إعادة تسمية الملف قبل الرفع
-if [ -f "$ZIP_PATH" ]; then
-  DIR_NAME=$(dirname "$ZIP_PATH")
-  NEW_ZIP_PATH="${DIR_NAME}/${NEW_ZIP_NAME}"
-  mv "$ZIP_PATH" "$NEW_ZIP_PATH"
-  ZIP_PATH="$NEW_ZIP_PATH"
+# 2. التحقق من وجود ملف الـ ZIP قبل البدء
+if [ -z "$ZIP_PATH" ] || [ ! -f "$ZIP_PATH" ]; then
+  echo "❌ Error: ZIP_PATH is not set or file does not exist ($ZIP_PATH)!"
+  exit 1
 fi
+
+# 3. إعادة تسمية الملف قبل الرفع
+DIR_NAME=$(dirname "$ZIP_PATH")
+NEW_ZIP_PATH="${DIR_NAME}/${NEW_ZIP_NAME}"
+mv "$ZIP_PATH" "$NEW_ZIP_PATH"
+ZIP_PATH="$NEW_ZIP_PATH"
 
 echo "Uploading to GoFile..."
 GOFILE_LINK=$(sudo bash upload.sh "$ZIP_PATH")
@@ -34,21 +41,21 @@ $GOFILE_LINK
 
 #### 📊 File Info:
 • Size: $FILE_SIZE
-• Build Time: $BUILD_TIME
+• Build Time: ${BUILD_TIME:-N/A}
 • MD5: $MD5_SUM
 
 #### 📱 Rom Info:
-• Ported For: $STOCK_DEVICE
-• Ported From: $TARGET_DEVICE
-• Build Version: $VERSION
-• Android Version: $ANDROID_VERSION
-• One UI Version: $ONE_UI_VERSION
-• CPU ABILIST: $CPU_ABILIST
+• Ported For: $STOCK_DEV
+• Ported From: $TARGET_DEV
+• Build Version: ${VERSION:-N/A}
+• Android Version: ${ANDROID_VERSION:-N/A}
+• One UI Version: $ONE_UI_VER
+• CPU ABILIST: ${CPU_ABILIST:-N/A}
 
 #### ⚙️ Build Options:
-• Filesystem: $OUTPUT_FILESYSTEM
-• Compressed IMG: $COMPRESS_IMG_TO_XZ
-• Used OneUI 8 Tethering APEX: $USE_UI_8_TETHERING_APEX
+• Filesystem: ${OUTPUT_FILESYSTEM:-N/A}
+• Compressed IMG: ${COMPRESS_IMG_TO_XZ:-N/A}
+• Used OneUI 8 Tethering APEX: ${USE_UI_8_TETHERING_APEX:-N/A}
 "
 
 # Convert to JSON-safe string
@@ -69,5 +76,5 @@ if [ -n "$GIT_TOKEN" ]; then
       \"prerelease\": false
     }"
 else
-  echo "GIT_TOKEN not found. Skipping release."
+  echo "⚠️ GIT_TOKEN not found. Skipping GitHub release creation."
 fi
