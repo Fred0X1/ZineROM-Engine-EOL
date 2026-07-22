@@ -7,7 +7,18 @@ set -e
 # GitHub automatically provides: GITHUB_REPOSITORY
 
 TAG_NAME="${TARGET_DEVICE}-$(date +%s)"
-RELEASE_NAME="ZineROM-${STOCK_DEVICE} Ported From ${TARGET_DEVICE}"
+
+# تنسيق الاسم الجديد ليشمل إصدار الـ One UI
+NEW_ZIP_NAME="ZineROM_OneUI_${ONE_UI_VERSION}_${TARGET_DEVICE}_${STOCK_DEVICE}.zip"
+RELEASE_NAME="ZineROM One UI ${ONE_UI_VERSION} ${TARGET_DEVICE} ${STOCK_DEVICE}"
+
+# إعادة تسمية الملف قبل الرفع
+if [ -f "$ZIP_PATH" ]; then
+  DIR_NAME=$(dirname "$ZIP_PATH")
+  NEW_ZIP_PATH="${DIR_NAME}/${NEW_ZIP_NAME}"
+  mv "$ZIP_PATH" "$NEW_ZIP_PATH"
+  ZIP_PATH="$NEW_ZIP_PATH"
+fi
 
 echo "Uploading to GoFile..."
 GOFILE_LINK=$(sudo bash upload.sh "$ZIP_PATH")
