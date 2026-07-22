@@ -12,16 +12,23 @@ TARGET_DEV="${TARGET_DEVICE:-Target}"
 STOCK_DEV="${STOCK_DEVICE:-Stock}"
 
 TAG_NAME="${TARGET_DEV}-$(date +%s)"
-NEW_ZIP_NAME="ZineROM_OneUI_${ONE_UI_VER}_${TARGET_DEV}_${STOCK_DEV}.zip"
-RELEASE_NAME="ZineROM One UI ${ONE_UI_VER} ${TARGET_DEV} ${STOCK_DEV}"
 
-# 2. التحقق من وجود ملف الـ ZIP قبل البدء
+# 2. التنسيق الجديد بناءً على المثال المطلوب
+# للـ GitHub Release: ZineROM S24 FE OneUI 7 A15 4G
+RELEASE_NAME="ZineROM ${TARGET_DEV} OneUI ${ONE_UI_VER} ${STOCK_DEV}"
+
+# لاسم ملف الـ ZIP (تم استخدام الـ Underscore لتجنب المشاكل مع المسافات في الروابط)
+NEW_ZIP_NAME="ZineROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
+# استبدالأي مسافات داخل اسم الملف بشارطة سفليّة _ لضمان سلامة الرفع
+NEW_ZIP_NAME=$(echo "$NEW_ZIP_NAME" | tr ' ' '_')
+
+# 3. التحقق من وجود ملف الـ ZIP قبل البدء
 if [ -z "$ZIP_PATH" ] || [ ! -f "$ZIP_PATH" ]; then
   echo "❌ Error: ZIP_PATH is not set or file does not exist ($ZIP_PATH)!"
   exit 1
 fi
 
-# 3. إعادة تسمية الملف قبل الرفع
+# 4. إعادة تسمية الملف قبل الرفع
 DIR_NAME=$(dirname "$ZIP_PATH")
 NEW_ZIP_PATH="${DIR_NAME}/${NEW_ZIP_NAME}"
 mv "$ZIP_PATH" "$NEW_ZIP_PATH"
