@@ -143,7 +143,11 @@ log_success "Build properties updated with ZineROM identity flags."
 
 log_stage "FINAL IMAGE COMPILATION"
 log_info "Target filesystem packing initiated..."
-BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "all" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+
+# إجبار المحرك على بناء البارتشنات الثلاثة بشكل فردي لضمان خروج system_ext.img
+BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system_ext" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
 
 log_stage "BUILD PIPELINE SUCCESS"
 log_info "All tasks executed. Preserving analytical logs."
