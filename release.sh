@@ -13,7 +13,7 @@ TAG_NAME="${TARGET_DEV}-$(date +%s)"
 RELEASE_NAME="ZineROM ${TARGET_DEV} OneUI ${ONE_UI_VER}${STOCK_DEV}"
 
 # اسم الملف المضغوط
-NEW_ZIP_NAME="ZineROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
+NEW_ZIP_NAME="ZineROM_unofficial_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
 NEW_ZIP_NAME=$(echo "$NEW_ZIP_NAME" | tr ' ' '_')
 
 # التأكد من وجود ملف الـ ZIP
