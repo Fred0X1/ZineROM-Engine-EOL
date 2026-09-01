@@ -1,43 +1,15 @@
-MIT LICENSE & DERIVATIVE WORK NOTICE
+# ZineROM Engine (Fork)
 
-This project, "ZineROM Engine" (Version Sixteen), is a derivative work and a heavily modified fork of the original "Quantum ROM Tool".
+> **Notice:** This repository is a custom **fork** of the original QuantumRom Tool, which has reached **End of Life (EOL)**. 
 
-===================================================================
-ORIGINAL WORK CREDITS
-===================================================================
-* Original Project: Quantum ROM Tool
-* Original Concept & Base Source: Quantum ROM Developers / Maintainers
+## Overview
+This tool was forked to continue maintenance, apply heavy modifications, and introduce various system-level enhancements. 
 
-===================================================================
-MODIFICATIONS & ENHANCEMENTS COPYRIGHT
-===================================================================
-Copyright (c) 2026 @zinefather / ZineROM Project
-All rights reserved.
+* **Status:** This workflow and repository are now **Public**.
+* **Modifications:** Extensive changes have been applied to scripts, environment settings, and build routines.
+* **Current Issue:** Please note that the tool currently contains unresolved errors/bugs that are not being actively fixed at this moment.
 
-The modifications, rewrites, and added features in this repository 
-(including but not limited to: deep system optimizations, specialized 
-Floating Features integration for budget/low-end devices, custom boot 
-animations, and automated workflow scripts) are the intellectual 
-property of @zinefather.
+## Forking & Contributions
+You are free to **fork this repository**, modify the code, and fix any existing issues or adapt the workflow to your needs. 
 
-===================================================================
-TERMS AND CONDITIONS
-===================================================================
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-1. The original project credits, the copyright notice of the modifications, 
-   and this permission notice shall be included in all copies or substantial 
-   portions of the Software.
-
-2. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-   SOFTWARE.
+Feel free to submit a Pull Request if you manage to patch the known issues!
