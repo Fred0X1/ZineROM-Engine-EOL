@@ -111,16 +111,12 @@ jobs:
           fi
           touch zinrom_build.log
           
-          # فحص مكان ملف sixteen.sh وتشغيله بأمان
           if [ -f "sixteen.sh" ]; then
             chmod +x sixteen.sh
             sudo bash sixteen.sh "${{ github.event.inputs.STOCK_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE }}" "" "${{ github.event.inputs.OUTPUT_FILESYSTEM }}" 2>&1 | tee zinrom_build.log
           elif [ -f "scripts/sixteen.sh" ]; then
             chmod +x scripts/sixteen.sh
             sudo bash scripts/sixteen.sh "${{ github.event.inputs.STOCK_DEVICE }}" "${{ github.event.inputs.TARGET_DEVICE }}" "" "${{ github.event.inputs.OUTPUT_FILESYSTEM }}" 2>&1 | tee zinrom_build.log
-          else
-            echo "❌ File sixteen.sh not found!"
-            exit 1
           fi
 
       - name: Compress images & prepare upload
@@ -130,10 +126,8 @@ jobs:
           ZIP_NAME="${{ github.event.inputs.TARGET_DEVICE }}_Port_For_${{ github.event.inputs.STOCK_DEVICE }}.zip"
           ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
-          # مسح أي ملف img مساحته 0KB لتفادي مشكلة system_ext
           find "$OUT_DIR" -type f -size 0 -name "*.img" -delete
 
-          ls -la "$OUT_DIR"
           if [ "${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}" = "True" ]; then
             for file in "$OUT_DIR"/*.img; do
               if [ -f "$file" ]; then
@@ -145,6 +139,36 @@ jobs:
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5
           fi
 
+          echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
+
+      - name: Upload Release via release.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          if [ -f "release.sh" ]; then
+            chmod +x release.sh
+            bash release.sh
+          fi
+
+      - name: Add Download Link to Job Summary & Console
+        if: always()
+        run: |
+          OUT_DIR="$(pwd)/OUT"
+          GOFILE_LINK=""
+          if [ -f "$OUT_DIR/gofile_link.txt" ]; then
+            GOFILE_LINK=$(cat "$OUT_DIR/gofile_link.txt")
+          fi
+
+          echo "### 🚀 ZineROM Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$GOFILE_LINK" ]; then
+            echo "🔗 **انقر رابط تحميل الروم:** [اضغط هنا للتحميل]($GOFILE_LINK)" >> $GITHUB_STEP_SUMMARY
+            echo "📦 **رابط Gofile المباشر بالحروف:** \`$GOFILE_LINK\`" >> $GITHUB_STEP_SUMMARY
+            echo "::notice title=Gofile Direct Download Link::$GOFILE_LINK"
+          else
+            echo "⚠️ لم يتم العثور على رابط Gofile مباشر، يمكنك تحميل الـ Logs من الـ Artifacts بالأسفل." >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Upload Build Engine Logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -152,4 +176,3 @@ jobs:
           name: ZineROM-Build-Logs-${{ github.run_id }}
           path: zinrom_build.log
           retention-days: 7
-
