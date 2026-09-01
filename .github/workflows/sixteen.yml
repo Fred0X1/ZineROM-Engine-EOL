@@ -121,9 +121,15 @@ jobs:
 
       - name: Compress images & prepare upload
         run: |
-          echo "BUILD_TIME=$(TZ='Africa/Cairo' date '+%Y-%m-%d %I:%M:%S %p')" >> $GITHUB_ENV
+          echo "BUILD_TIME=$(TZ='Africa/Cairo' date '+\%Y-\%m-\%d \%I:\%M:\%S \%p')" >> $GITHUB_ENV
           OUT_DIR="$(pwd)/OUT"
-          ZIP_NAME="${{ github.event.inputs.TARGET_DEVICE }}_Port_For_${{ github.event.inputs.STOCK_DEVICE }}.zip"
+          
+          TARGET_DEV="${{ github.event.inputs.TARGET_DEVICE }}"
+          STOCK_DEV="${{ github.event.inputs.STOCK_DEVICE }}"
+          ONE_UI_VER="${{ github.event.inputs.ONE_UI_VERSION }}"
+          
+          ZIP_NAME="KryptonROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
+          ZIP_NAME=$(echo "$ZIP_NAME" | tr ' ' '_')
           ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
           find "$OUT_DIR" -type f -size 0 -name "*.img" -delete
@@ -139,11 +145,25 @@ jobs:
             7z a -tzip "$ZIP_PATH" "$OUT_DIR"/*.img -mx=5
           fi
 
+          if [ ! -f "$ZIP_PATH" ] || [ $(stat -c\%s "$ZIP_PATH") -lt 104857600 ]; then
+             echo "❌ Error: ZIP file is invalid or too small!"
+             exit 1
+          fi
+
           echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
+          echo "TARGET_DEVICE=$TARGET_DEV" >> $GITHUB_ENV
+          echo "STOCK_DEVICE=$STOCK_DEV" >> $GITHUB_ENV
+          echo "ONE_UI_VERSION=$ONE_UI_VER" >> $GITHUB_ENV
 
       - name: Upload Release via release.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          ZIP_PATH: ${{ env.ZIP_PATH }}
+          TARGET_DEVICE: ${{ env.TARGET_DEVICE }}
+          STOCK_DEVICE: ${{ env.STOCK_DEVICE }}
+          ONE_UI_VERSION: ${{ env.ONE_UI_VERSION }}
+          OUTPUT_FILESYSTEM: ${{ github.event.inputs.OUTPUT_FILESYSTEM }}
+          COMPRESS_IMG_TO_XZ: ${{ github.event.inputs.COMPRESS_IMG_TO_XZ }}           USE_UI_8_TETHERING_APEX:${{ github.event.inputs.USE_UI_8_TETHERING_APEX }}
         run: |
           if [ -f "release.sh" ]; then
             chmod +x release.sh
@@ -176,3 +196,4 @@ jobs:
           name: ZineROM-Build-Logs-${{ github.run_id }}
           path: zinrom_build.log
           retention-days: 7
+
