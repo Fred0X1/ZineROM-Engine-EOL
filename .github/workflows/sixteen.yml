@@ -18,7 +18,7 @@ on:
       TARGET_DEVICE:
         description: "الجهاز الفلاج شيب المصدر (الـ Port)"
         required: true
-        default: "SM-A356E"
+        default: "SM-S711B"
       USE_UI_8_TETHERING_APEX:
         description: "خيار الكيرنال"
         required: true
