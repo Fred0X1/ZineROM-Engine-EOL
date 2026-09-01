@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ================================================================= #
-#  ZineROM Engine Sixteen - Barebones Stable Core (A52s Dedicated)  #
+#  ZineROM Engine Sixteen - Fixed Core (A52s Dedicated)             #
 # ================================================================= #
 
 export LOG_FILE="$(pwd)/zinrom_build.log"
@@ -36,8 +36,9 @@ export OUT_DIR="$(pwd)/OUT"
 export WORK_DIR="$(pwd)/WORK"
 export APKTOOL="$(pwd)/bin/java/apktool.jar"
 
-# التأكد من إنشاء مجلد الخرج
+# التأكد الصارم من إنشاء وتصفيرة مجلد الخرج
 mkdir -p "$OUT_DIR"
+TARGET_DIR="$FIRM_DIR/$TARGET_DEVICE"
 
 log_info "Target Config: Device=$STOCK_DEVICE | Base=$TARGET_DEVICE | CSC=$TARGET_DEVICE_CSC | FS=$OUTPUT_FILESYSTEM"
 
@@ -55,63 +56,72 @@ source "$(pwd)/scripts/debloat.sh"
 source "$(pwd)/scripts/ZineRom.sh"
 
 log_stage "FIRMWARE DECONSTRUCTION"
-EXTRACT_SUPER_IMG "$FIRM_DIR/$TARGET_DEVICE" && log_success "Super image extracted." || log_error "Failed to extract Super image."
-EXTRACT_FIRMWARE_IMG "$FIRM_DIR/$TARGET_DEVICE" "all" && log_success "Firmware partitions parsed." || log_error "Failed partition parsing."
+EXTRACT_SUPER_IMG "$TARGET_DIR" && log_success "Super image extracted." || log_error "Failed to extract Super image."
+EXTRACT_FIRMWARE_IMG "$TARGET_DIR" "all" && log_success "Firmware partitions parsed." || log_error "Failed partition parsing."
 
 log_stage "SYSTEM OPTIMIZATION & DEBLOAT"
-DECODE_OMC "$FIRM_DIR/$TARGET_DEVICE" || log_warn "OMC decoding returned non-zero code."
-DEBLOAT "$FIRM_DIR/$TARGET_DEVICE" || log_warn "Debloat stage finished with alerts."
+DECODE_OMC "$TARGET_DIR" || log_warn "OMC decoding returned non-zero code."
+DEBLOAT "$TARGET_DIR" || log_warn "Debloat stage finished with alerts."
 
 log_stage "ESSENTIAL SECURITY & FRAMEWORK PATCHES"
-APPLY_STOCK_CONFIG "$FIRM_DIR/$TARGET_DEVICE"
-PATCH_SELINUX "$FIRM_DIR/$TARGET_DEVICE"
-DISABLE_SECURITY "$FIRM_DIR/$TARGET_DEVICE"
+APPLY_STOCK_CONFIG "$TARGET_DIR"
+PATCH_SELINUX "$TARGET_DIR"
+DISABLE_SECURITY "$TARGET_DIR"
 
 log_stage "SMALI DECOMPILATION INFRASTRUCTURE"
-INSTALL_FRAMEWORK "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/framework-res.apk"
-DECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/services.jar" "$WORK_DIR"
+INSTALL_FRAMEWORK "$APKTOOL" "$TARGET_DIR/system/system/framework/framework-res.apk"
+DECOMPILE "$APKTOOL" "$TARGET_DIR/system/system/framework" "$TARGET_DIR/system/system/framework/services.jar" "$WORK_DIR"
 
 log_stage "SMALI PATCH INJECTION (CORE ONLY)"
 PATCH_FLAG_SECURE "$WORK_DIR/services"
 PATCH_SECURE_FOLDER "$WORK_DIR/services"
 
 log_stage "SMALI RECOMPILATION PIPELINE"
-RECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$WORK_DIR/services" "$WORK_DIR"
-mv -f "$WORK_DIR"/services.jar "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/"
-PATCH_BT_LIB "$FIRM_DIR/$TARGET_DEVICE" "$WORK_DIR"
+RECOMPILE "$APKTOOL" "$TARGET_DIR/system/system/framework" "$WORK_DIR/services" "$WORK_DIR"
+mv -f "$WORK_DIR"/services.jar "$TARGET_DIR/system/system/framework/"
+PATCH_BT_LIB "$TARGET_DIR" "$WORK_DIR"
 
 log_stage "PROPERTY INJECTION & BRANDING"
-B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
+B_ID="$(grep -m1 '^ro.system.build.id=' "$TARGET_DIR/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
-# Minimal Stable Build Properties & Hardware Acceleration
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wifi.interface" "wlan0"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wlan.wfd.hdcp" "disable"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.telephony.sim_slots.count" "2"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.max_users" "5"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.show_multiuserui" "1"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.hwui.renderer" "skiavk"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_idle_timer_ms" "2500"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_touch_timer_ms" "3000"
+BUILD_PROP "$TARGET_DIR" "system" "wifi.interface" "wlan0"
+BUILD_PROP "$TARGET_DIR" "system" "wlan.wfd.hdcp" "disable"
+BUILD_PROP "$TARGET_DIR" "system" "ro.telephony.sim_slots.count" "2"
+BUILD_PROP "$TARGET_DIR" "system" "fw.max_users" "5"
+BUILD_PROP "$TARGET_DIR" "system" "fw.show_multiuserui" "1"
+BUILD_PROP "$TARGET_DIR" "system" "debug.hwui.renderer" "skiavk"
+BUILD_PROP "$TARGET_DIR" "system" "ro.surface_flinger.set_idle_timer_ms" "2500"
+BUILD_PROP "$TARGET_DIR" "system" "ro.surface_flinger.set_touch_timer_ms" "3000"
 
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
+BUILD_PROP "$TARGET_DIR" "system" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
+BUILD_PROP "$TARGET_DIR" "product" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
 log_success "Build properties updated."
 
 log_stage "FINAL IMAGE COMPILATION"
 log_info "Compiling system partition..."
-BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+BUILD_IMG "$TARGET_DIR" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR" || BUILD_IMG "$TARGET_DIR/system" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
 
 log_info "Compiling product partition..."
-BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+BUILD_IMG "$TARGET_DIR" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR" || BUILD_IMG "$TARGET_DIR/product" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
 
-SYS_EXT_DIR="$FIRM_DIR/$TARGET_DEVICE/system_ext"
+SYS_EXT_DIR="$TARGET_DIR/system_ext"
 if [ -d "$SYS_EXT_DIR" ] && [ "$(ls -A "$SYS_EXT_DIR" 2>/dev/null)" ]; then
     log_info "Compiling system_ext partition..."
-    BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system_ext" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+    BUILD_IMG "$TARGET_DIR" "system_ext" "$OUTPUT_FILESYSTEM" "$OUT_DIR" || BUILD_IMG "$SYS_EXT_DIR" "system_ext" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
 else
     log_warn "Skipping system_ext compilation (Directory missing or empty)."
-    rm -f "$OUT_DIR/system_ext.img"
+fi
+
+log_stage "COLLECTING OUTPUT FILES"
+# تجميع وتحريك جميع ملفات الـ img الناتجة إلى مجلد OUT المعتمد
+find "$TARGET_DIR" "$(pwd)" -maxdepth 2 -name "*.img" -not -path "$OUT_DIR/*" -exec mv -f {} "$OUT_DIR/" \; 2>/dev/null || true
+
+IMG_COUNT=$(ls -1 "$OUT_DIR"/*.img 2>/dev/null | wc -l)
+if [ "$IMG_COUNT" -eq 0 ]; then
+    log_error "No .img files generated in $OUT_DIR! Compilation failed."
+    exit 1
 fi
 
 log_stage "BUILD PIPELINE SUCCESS"
-log_info "All tasks executed. Images are generated in $OUT_DIR."
+log_info "Successfully generated $IMG_COUNT image files in $OUT_DIR."
+
