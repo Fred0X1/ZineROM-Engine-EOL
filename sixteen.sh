@@ -36,6 +36,9 @@ export OUT_DIR="$(pwd)/OUT"
 export WORK_DIR="$(pwd)/WORK"
 export APKTOOL="$(pwd)/bin/java/apktool.jar"
 
+# التأكد من إنشاء مجلد الخرج
+mkdir -p "$OUT_DIR"
+
 log_info "Target Config: Device=$STOCK_DEVICE | Base=$TARGET_DEVICE | CSC=$TARGET_DEVICE_CSC | FS=$OUTPUT_FILESYSTEM"
 
 log_stage "PRE-FLIGHT SECURITY PATCHING"
@@ -69,7 +72,6 @@ INSTALL_FRAMEWORK "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/f
 DECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/services.jar" "$WORK_DIR"
 
 log_stage "SMALI PATCH INJECTION (CORE ONLY)"
-# اقتصار الباتشات على الخدمات الأساسية لضمان استقرار الـ Setup Wizard
 PATCH_FLAG_SECURE "$WORK_DIR/services"
 PATCH_SECURE_FOLDER "$WORK_DIR/services"
 
@@ -81,21 +83,27 @@ PATCH_BT_LIB "$FIRM_DIR/$TARGET_DEVICE" "$WORK_DIR"
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
-# Minimal Stable Build Properties
+# Minimal Stable Build Properties & Hardware Acceleration
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wifi.interface" "wlan0"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wlan.wfd.hdcp" "disable"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.telephony.sim_slots.count" "2"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.max_users" "5"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.show_multiuserui" "1"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.hwui.renderer" "skiavk"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_idle_timer_ms" "2500"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_touch_timer_ms" "3000"
 
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-A52s"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-A52s"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
+log_success "Build properties updated."
 
 log_stage "FINAL IMAGE COMPILATION"
+log_info "Compiling system partition..."
 BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+
+log_info "Compiling product partition..."
 BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
 
-# التحقق من مجلد system_ext والتأكد أنه غير فارغ قبل البناء
 SYS_EXT_DIR="$FIRM_DIR/$TARGET_DEVICE/system_ext"
 if [ -d "$SYS_EXT_DIR" ] && [ "$(ls -A "$SYS_EXT_DIR" 2>/dev/null)" ]; then
     log_info "Compiling system_ext partition..."
@@ -106,26 +114,4 @@ else
 fi
 
 log_stage "BUILD PIPELINE SUCCESS"
-
-# Safe Hardware Acceleration for Samsung One UI (A52s / Snapdragon)
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.hwui.renderer" "skiavk"
-
-# Refresh Rate & Multi-User
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_idle_timer_ms" "2500"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.surface_flinger.set_touch_timer_ms" "3000"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.max_users" "5"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.show_multiuserui" "1"
-
-# ZineROM build.prop id
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
-BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | KryptonROM 1.0.0"
-log_success "Build properties updated with ZineROM identity flags."
-
-log_stage "FINAL IMAGE COMPILATION"
-log_info "Target filesystem packing initiated..."
-BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
-BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
-BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system_ext" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
-
-log_stage "BUILD PIPELINE SUCCESS"
-log_info "All tasks executed. Preserving analytical logs."
+log_info "All tasks executed. Images are generated in $OUT_DIR."
