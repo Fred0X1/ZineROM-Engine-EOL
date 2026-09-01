@@ -10,10 +10,10 @@ STOCK_DEV="${STOCK_DEVICE:-Stock}"
 TAG_NAME="${TARGET_DEV}-$(date +%s)"
 
 # تنسيق المسمى المطلوب
-RELEASE_NAME="Exion ${TARGET_DEV} OneUI ${ONE_UI_VER}${STOCK_DEV}"
+RELEASE_NAME="KryptonROM ${TARGET_DEV} OneUI ${ONE_UI_VER}${STOCK_DEV}"
 
 # اسم الملف المضغوط
-NEW_ZIP_NAME="ExionROM__${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
+NEW_ZIP_NAME="KryptonROM_${TARGET_DEV}_OneUI_${ONE_UI_VER}_${STOCK_DEV}.zip"
 NEW_ZIP_NAME=$(echo "$NEW_ZIP_NAME" | tr ' ' '_')
 
 # التأكد من وجود ملف الـ ZIP
