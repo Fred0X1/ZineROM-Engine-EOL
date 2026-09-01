@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ================================================================= #
-#  ZineROM Engine Sixteen - @zinefather #
+#  ZineROM Engine Sixteen - Barebones Stable Core (A52s Dedicated)  #
 # ================================================================= #
 
 export LOG_FILE="$(pwd)/zinrom_build.log"
@@ -15,7 +15,7 @@ log_warn()  { echo -e "[$(date +'%H:%M:%S')] [WARN]  $1"; }
 log_error() { echo -e "[$(date +'%H:%M:%S')] [ERROR] $1"; }
 
 log_stage "ENGINE INITIALIZATION"
-log_info "ZineROM Engine Version: Sixteen (A52s Dedicated)"
+log_info "ZineROM Engine Version: Sixteen (A52s Clean Core)"
 
 if [ "$#" -lt 4 ]; then
     log_error "Missing execution arguments. Expected 4, received $#."
@@ -35,16 +35,12 @@ export FIRM_DIR="$(pwd)/FW"
 export OUT_DIR="$(pwd)/OUT"
 export WORK_DIR="$(pwd)/WORK"
 export APKTOOL="$(pwd)/bin/java/apktool.jar"
-export DEVICES_DIR="$(pwd)/ZineROM/Devices"
-export VNDKS_COLLECTION="$(pwd)/ZineROM/vndks"
-export SMART_MANAGER_CN="$(pwd)/ZineROM/Mods/SMART_MANAGER_CN"
-export BUILD_PARTITIONS="product,system_ext,system"
 
 log_info "Target Config: Device=$STOCK_DEVICE | Base=$TARGET_DEVICE | CSC=$TARGET_DEVICE_CSC | FS=$OUTPUT_FILESYSTEM"
 
 log_stage "PRE-FLIGHT SECURITY PATCHING"
 if [ -f "$(pwd)/scripts/ZineRom.sh" ]; then
-    log_info "Injecting dynamic bypass for CPU ABI Mismatch inside framework dependency..."
+    log_info "Injecting dynamic bypass inside framework dependency..."
     sed -i '/CPU ABI MISMATCH!/,/exit 1/ s/exit 1/# exit 1/' "$(pwd)/scripts/ZineRom.sh"
     log_success "Bypass verified and applied."
 else
@@ -56,58 +52,60 @@ source "$(pwd)/scripts/debloat.sh"
 source "$(pwd)/scripts/ZineRom.sh"
 
 log_stage "FIRMWARE DECONSTRUCTION"
-log_info "Decompressing super image and firmware components..."
 EXTRACT_SUPER_IMG "$FIRM_DIR/$TARGET_DEVICE" && log_success "Super image extracted." || log_error "Failed to extract Super image."
 EXTRACT_FIRMWARE_IMG "$FIRM_DIR/$TARGET_DEVICE" "all" && log_success "Firmware partitions parsed." || log_error "Failed partition parsing."
 
 log_stage "SYSTEM OPTIMIZATION & DEBLOAT"
-DECODE_OMC "$FIRM_DIR/$TARGET_DEVICE" && log_success "OMC decoding complete." || log_warn "OMC decoding returned non-zero code."
-DEBLOAT "$FIRM_DIR/$TARGET_DEVICE" && log_success "System debloating complete." || log_warn "Debloat stage finished with alerts."
+DECODE_OMC "$FIRM_DIR/$TARGET_DEVICE" || log_warn "OMC decoding returned non-zero code."
+DEBLOAT "$FIRM_DIR/$TARGET_DEVICE" || log_warn "Debloat stage finished with alerts."
 
-log_stage "FRAMEWORK MODIFICATION & SECURITY BYPASS"
+log_stage "ESSENTIAL SECURITY & FRAMEWORK PATCHES"
 APPLY_STOCK_CONFIG "$FIRM_DIR/$TARGET_DEVICE"
 PATCH_SELINUX "$FIRM_DIR/$TARGET_DEVICE"
 DISABLE_SECURITY "$FIRM_DIR/$TARGET_DEVICE"
-ADD_SAMSUNG_FLAGSHIP_APPS "$FIRM_DIR/$TARGET_DEVICE"
-APPLY_CUSTOM_FEATURES "$FIRM_DIR/$TARGET_DEVICE"
-log_success "Core flagship assets and properties adjusted."
 
 log_stage "SMALI DECOMPILATION INFRASTRUCTURE"
-log_info "Installing framework resources..."
 INSTALL_FRAMEWORK "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/framework-res.apk"
-
-log_info "Decompiling target JAR archives..."
-DECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/ssrm.jar" "$WORK_DIR"
 DECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/services.jar" "$WORK_DIR"
-DECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/samsungkeystoreutils.jar" "$WORK_DIR"
-log_success "Smali structures generated in work directory."
 
-log_stage "SMALI PATCH INJECTION"
-PATCH_SSRM "$WORK_DIR/ssrm"
+log_stage "SMALI PATCH INJECTION (CORE ONLY)"
+# اقتصار الباتشات على الخدمات الأساسية لضمان استقرار الـ Setup Wizard
 PATCH_FLAG_SECURE "$WORK_DIR/services"
 PATCH_SECURE_FOLDER "$WORK_DIR/services"
-PATCH_PRIVATE_SHARE "$WORK_DIR/samsungkeystoreutils"
-log_success "Framework vulnerabilities and restriction flags bypassed."
 
 log_stage "SMALI RECOMPILATION PIPELINE"
-log_info "Recompiling modified smali directories..."
-RECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$WORK_DIR/ssrm" "$WORK_DIR"
 RECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$WORK_DIR/services" "$WORK_DIR"
-RECOMPILE "$APKTOOL" "$FIRM_DIR/$TARGET_DEVICE/system/system/framework" "$WORK_DIR/samsungkeystoreutils" "$WORK_DIR"
-
-mv -f "$WORK_DIR"/*.jar "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/"
+mv -f "$WORK_DIR"/services.jar "$FIRM_DIR/$TARGET_DEVICE/system/system/framework/"
 PATCH_BT_LIB "$FIRM_DIR/$TARGET_DEVICE" "$WORK_DIR"
-log_success "Recompilation complete. Modified binaries linked back to system."
 
 log_stage "PROPERTY INJECTION & BRANDING"
 B_ID="$(grep -m1 '^ro.system.build.id=' "$FIRM_DIR/$TARGET_DEVICE/system/system/build.prop" | cut -d= -f2 | tr -d '\r')"
 
-log_info "Injecting performance, display, network, and multi-user properties..."
-
-# Network & Wi-Fi
+# Minimal Stable Build Properties
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wifi.interface" "wlan0"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "wlan.wfd.hdcp" "disable"
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.telephony.sim_slots.count" "2"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.max_users" "5"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "fw.show_multiuserui" "1"
+
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "ro.build.display.id" "${B_ID} | ZineROM-A52s"
+BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "product" "ro.build.display.id" "${B_ID} | ZineROM-A52s"
+
+log_stage "FINAL IMAGE COMPILATION"
+BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "product" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+
+# التحقق من مجلد system_ext والتأكد أنه غير فارغ قبل البناء
+SYS_EXT_DIR="$FIRM_DIR/$TARGET_DEVICE/system_ext"
+if [ -d "$SYS_EXT_DIR" ] && [ "$(ls -A "$SYS_EXT_DIR" 2>/dev/null)" ]; then
+    log_info "Compiling system_ext partition..."
+    BUILD_IMG "$FIRM_DIR/$TARGET_DEVICE" "system_ext" "$OUTPUT_FILESYSTEM" "$OUT_DIR"
+else
+    log_warn "Skipping system_ext compilation (Directory missing or empty)."
+    rm -f "$OUT_DIR/system_ext.img"
+fi
+
+log_stage "BUILD PIPELINE SUCCESS"
 
 # Safe Hardware Acceleration for Samsung One UI (A52s / Snapdragon)
 BUILD_PROP "$FIRM_DIR/$TARGET_DEVICE" "system" "debug.hwui.renderer" "skiavk"
